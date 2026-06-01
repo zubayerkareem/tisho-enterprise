@@ -241,17 +241,10 @@ export function Login() {
 
             <div className="mt-6 pt-6 border-t border-border-default text-center">
               <p className="text-sm text-text-muted">
-                Don't have an account?{' '}
-                <button className="text-accent-primary font-medium hover:underline">
-                  Contact Tisho Enterprises
-                </button>
+                Don't have an account? Contact Tisho Enterprises
               </p>
             </div>
           </div>
-
-          <p className="text-center text-xs text-text-muted mt-6">
-            Protected by Supabase Auth · Funds secured via Stripe
-          </p>
         </div>
       </div>
     </div>
