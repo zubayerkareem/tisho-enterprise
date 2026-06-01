@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -241,7 +241,10 @@ export function Login() {
 
             <div className="mt-6 pt-6 border-t border-border-default text-center">
               <p className="text-sm text-text-muted">
-                Don't have an account? Contact Tisho Enterprises
+                Don't have an account?{' '}
+                <Link to="/signup" className="text-accent-primary font-medium hover:underline">
+                  Create account
+                </Link>
               </p>
             </div>
           </div>
