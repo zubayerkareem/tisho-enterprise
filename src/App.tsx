@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/lib/auth/ProtectedRoute'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { Toaster } from '@/components/ui/sonner'
 import { Login } from '@/pages/Login'
+import { Signup } from '@/pages/Signup'
 import { Overview } from '@/pages/Overview'
 import { PaymentHistory } from '@/pages/PaymentHistory'
 import { Investments } from '@/pages/Investments'
@@ -28,7 +29,8 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login"  element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route
               path="/"
               element={
