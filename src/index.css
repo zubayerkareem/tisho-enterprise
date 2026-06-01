@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+/* ─── Tisho Design Tokens ────────────────────────────────────────────── */
+@theme {
+  /* Surfaces */
+  --color-surface-base:    #ffffff;
+  --color-surface-subtle:  #f7f9f8;
+  --color-surface-card:    #ffffff;
+
+  /* Borders */
+  --color-border-default:  #e4e7e5;
+  --color-border-strong:   #c5cdc9;
+
+  /* Text */
+  --color-text-primary:    #002c14;
+  --color-text-secondary:  #4a5d54;
+  --color-text-muted:      #7a8a82;
+  --color-text-inverse:    #ffffff;
+
+  /* Brand accents */
+  --color-accent-primary:       #003819;
+  --color-accent-primary-hover: #002c14;
+  --color-accent-highlight:     #c3f63c;
+  --color-accent-highlight-hover: #b0e030;
+  --color-accent-soft:          #abc6b7;
+
+  /* Semantic status */
+  --color-status-success: #0f7a3d;
+  --color-status-warning: #b87333;
+  --color-status-danger:  #9c2c2c;
+  --color-status-danger-hover: #7a2020;
+  --color-status-info:    #2c5f9c;
+
+  /* Typography */
+  --font-sans: 'Inter', sans-serif;
+
+  /* Border radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text-primary);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}

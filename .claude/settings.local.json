@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(npx --yes chromium-cli screenshot http://localhost:5173/login --output /tmp/login.png --width 1440 --height 900)",
+      "Bash(where playwright *)",
+      "Bash(where chromium *)",
+      "Bash(where chrome *)",
+      "Bash(where msedge *)",
+      "Bash(npx playwright *)",
+      "Bash(node -e ' *)",
+      "Bash(gh --version)",
+      "Bash(git --version)",
+      "Bash(gh auth *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Zubayer\\\\Documents\\\\tisho-enterprise-master\" -Force | Select-Object Name, @{Name='Type';Expression={if\\($_.PSIsContainer\\){'DIR'}else{'FILE'}}} | Format-Table -AutoSize)",
+      "Bash(npm install *)",
+      "Bash(Remove-Item vite.config.js, eslint.config.js -Force)",
+      "Bash(Write-Output \"deleted\")",
+      "Bash(npx tsc *)"
+    ]
+  }
+}
