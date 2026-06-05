@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { PlusCircle, TrendingUp, CheckCircle2, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
+import { AddInvestmentModal } from '@/components/investments/AddInvestmentModal'
 import { mockInvestments } from '@/data/mockData'
+import type { Investment } from '@/types/models'
 
-function InvestmentCard({ inv }) {
+function InvestmentCard({ inv }: { inv: Investment }) {
   const progress = (inv.monthsElapsed / inv.monthsTotal) * 100
   const remaining = inv.monthsTotal - inv.monthsElapsed
 
@@ -36,7 +39,7 @@ function InvestmentCard({ inv }) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 mb-4">
           {[
             { label: 'Rate', val: `${inv.ratePercent}%`, sub: inv.type === 'compact' ? '/month' : '/year' },
-            { label: 'Monthly Return', val: `£${(inv.ratePerMonth || (inv.ratePerYear / 12)).toLocaleString('en-GB', { minimumFractionDigits: 2 })}`, sub: 'per month' },
+            { label: 'Monthly Return', val: `£${(inv.ratePerMonth ?? (inv.ratePerYear ?? 0) / 12).toLocaleString('en-GB', { minimumFractionDigits: 2 })}`, sub: 'per month' },
             { label: 'Total Received', val: `£${inv.totalReceived.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, sub: `of £${inv.totalExpected.toLocaleString('en-GB')}`, green: true },
             { label: inv.status === 'completed' ? 'Duration' : 'Remaining', val: inv.status === 'completed' ? `${inv.monthsTotal}mo` : `${remaining}mo`, sub: inv.status === 'completed' ? 'completed' : 'left' },
           ].map(s => (
@@ -79,38 +82,45 @@ function InvestmentCard({ inv }) {
 }
 
 export function Investments() {
-  const active = mockInvestments.filter(i => i.status === 'active')
+  const [modalOpen, setModalOpen] = useState(false)
+  const active    = mockInvestments.filter(i => i.status === 'active')
   const completed = mockInvestments.filter(i => i.status === 'completed')
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 text-sm text-[#4a5d54]">
-          <span className="flex items-center gap-1.5"><TrendingUp size={15} className="text-[#003819]" />{active.length} active</span>
-          <span className="flex items-center gap-1.5"><CheckCircle2 size={15} className="text-[#7a8a82]" />{completed.length} completed</span>
+    <>
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-sm text-[#4a5d54]">
+            <span className="flex items-center gap-1.5"><TrendingUp size={15} className="text-[#003819]" />{active.length} active</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 size={15} className="text-[#7a8a82]" />{completed.length} completed</span>
+          </div>
+          <Button size="sm" className="gap-1.5" onClick={() => setModalOpen(true)}>
+            <PlusCircle size={14} />
+            <span className="hidden sm:inline">Add Investment</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
         </div>
-        <Button size="sm" className="gap-1.5">
-          <PlusCircle size={14} /> <span className="hidden sm:inline">Add Investment</span><span className="sm:hidden">Add</span>
-        </Button>
+
+        {active.length > 0 && (
+          <section>
+            <h2 className="text-xs font-semibold text-[#002c14] mb-3 uppercase tracking-wider">Active</h2>
+            <div className="space-y-4">
+              {active.map(inv => <InvestmentCard key={inv.id} inv={inv} />)}
+            </div>
+          </section>
+        )}
+
+        {completed.length > 0 && (
+          <section>
+            <h2 className="text-xs font-semibold text-[#7a8a82] mb-3 uppercase tracking-wider">Completed</h2>
+            <div className="space-y-4 opacity-80">
+              {completed.map(inv => <InvestmentCard key={inv.id} inv={inv} />)}
+            </div>
+          </section>
+        )}
       </div>
 
-      {active.length > 0 && (
-        <section>
-          <h2 className="text-xs font-semibold text-[#002c14] mb-3 uppercase tracking-wider">Active</h2>
-          <div className="space-y-4">
-            {active.map(inv => <InvestmentCard key={inv.id} inv={inv} />)}
-          </div>
-        </section>
-      )}
-
-      {completed.length > 0 && (
-        <section>
-          <h2 className="text-xs font-semibold text-[#7a8a82] mb-3 uppercase tracking-wider">Completed</h2>
-          <div className="space-y-4 opacity-80">
-            {completed.map(inv => <InvestmentCard key={inv.id} inv={inv} />)}
-          </div>
-        </section>
-      )}
-    </div>
+      <AddInvestmentModal open={modalOpen} onClose={() => setModalOpen(false)} />
+    </>
   )
 }
