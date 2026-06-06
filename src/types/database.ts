@@ -35,6 +35,9 @@ export interface Database {
           kyc_status: KycStatus
           kyc_reason: string | null
           suspended: boolean
+          referral_code: string
+          referred_by: string | null
+          referral_balance_pence: number
           created_at: string
           updated_at: string
         }
@@ -43,6 +46,20 @@ export interface Database {
           updated_at?: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
+      }
+      referrals: {
+        Row: {
+          id: string
+          referrer_id: string
+          referred_id: string
+          bonus_pence: number
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['referrals']['Row'], 'id' | 'created_at'> & {
+          id?: string
+          created_at?: string
+        }
+        Update: never
       }
       investments: {
         Row: {
