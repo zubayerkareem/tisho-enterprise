@@ -64,6 +64,7 @@ export interface Database {
           next_payment_date: string | null
           profit_mode: ProfitMode
           stripe_payment_intent_id: string | null
+          transaction_screenshot_url: string | null
           created_at: string
           updated_at: string
         }
