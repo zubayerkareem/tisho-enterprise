@@ -13,6 +13,7 @@ import { PayoutMethods } from '@/pages/PayoutMethods'
 import { Withdrawals } from '@/pages/Withdrawals'
 import { Support } from '@/pages/Support'
 import { Settings } from '@/pages/Settings'
+import { Referral } from '@/pages/Referral'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +46,7 @@ export default function App() {
               <Route path="investments"    element={<Investments />} />
               <Route path="payout-methods" element={<PayoutMethods />} />
               <Route path="withdrawals"    element={<Withdrawals />} />
+              <Route path="referral"       element={<Referral />} />
               <Route path="support"        element={<Support />} />
               <Route path="settings"       element={<Settings />} />
             </Route>

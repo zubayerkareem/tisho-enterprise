@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Eye, EyeOff, User, Mail, Phone, MessageCircle, Lock } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -23,6 +23,9 @@ const signupSchema = z.object({
 type SignupFormData = z.infer<typeof signupSchema>
 
 export function Signup() {
+  const [searchParams] = useSearchParams()
+  const refCode = searchParams.get('ref')?.toUpperCase().trim() ?? ''
+
   const [showPassword, setShowPassword]        = useState(false)
   const [showConfirm, setShowConfirm]           = useState(false)
   const [submitted, setSubmitted]               = useState(false)
@@ -40,6 +43,7 @@ export function Signup() {
           full_name:       data.name,
           phone:           data.phone,
           whatsapp_number: data.whatsapp,
+          ...(refCode && { referral_code: refCode }),
         },
       },
     })
