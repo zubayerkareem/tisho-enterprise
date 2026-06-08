@@ -4,6 +4,8 @@ import { useAuth } from '@/lib/auth/AuthContext'
 
 const db = supabase as any
 
+export type PolicyType = 'capital_return' | 'compact'
+
 export interface ApplicationData {
   gender: string
   marital_status: string
@@ -17,6 +19,7 @@ export interface ApplicationData {
   website?: string
   account_name: string
   account_number: string
+  sort_code?: string
   bank_and_branch: string
   payout_frequency: string
   id_details: string
@@ -30,40 +33,45 @@ export interface ApplicationData {
   agreed_at: string
 }
 
-export function useMyApplication() {
+export function useMyApplication(policyType: PolicyType = 'capital_return') {
   const { user } = useAuth()
   return useQuery({
-    queryKey: ['my-application', user?.id],
+    queryKey: ['my-application', user?.id, policyType],
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('investor_applications')
         .select('*')
         .eq('user_id', user!.id)
+        .eq('policy_type', policyType)
         .maybeSingle()
       if (error) throw error
       return data as ApplicationData & {
-        id: string; user_id: string; status: string; admin_note: string | null;
-        submitted_at: string | null; reviewed_at: string | null
+        id: string; user_id: string; policy_type: PolicyType; status: string;
+        admin_note: string | null; submitted_at: string | null; reviewed_at: string | null
       } | null
     },
   })
 }
 
-export function useSubmitApplication() {
+export function useSubmitApplication(policyType: PolicyType = 'capital_return') {
   const qc = useQueryClient()
   const { user } = useAuth()
   return useMutation({
     mutationFn: async (data: ApplicationData) => {
       const { error } = await db
         .from('investor_applications')
-        .upsert({
-          user_id: user!.id,
-          ...data,
-          status: 'submitted',
-          submitted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
+        .upsert(
+          {
+            user_id: user!.id,
+            policy_type: policyType,
+            ...data,
+            status: 'submitted',
+            submitted_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id,policy_type' }
+        )
       if (error) throw error
     },
     onSuccess: () => {
