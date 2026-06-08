@@ -153,7 +153,11 @@ export function useCreateStripeInvestment() {
       const res = await supabase.functions.invoke('create-stripe-checkout', {
         body: { investmentId, amountPence, label, currency: 'gbp' },
       })
-      if (res.error) throw new Error(res.error.message)
+      if (res.error) {
+        // res.data contains the actual error body from the function
+        const detail = (res.data as any)?.error ?? res.error.message
+        throw new Error(detail)
+      }
 
       const { url } = res.data as { url: string }
       if (!url) throw new Error('No checkout URL returned')
