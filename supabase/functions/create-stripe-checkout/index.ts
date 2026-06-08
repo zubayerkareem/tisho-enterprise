@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     console.log('create-stripe-checkout received:', { investmentId, amountPence, label, currency })
 
     if (!investmentId) throw new Error('investmentId is required')
-    if (!amountPence || amountPence <= 0) throw new Error(`amountPence invalid: ${amountPence}`)
+    if (!amountPence || amountPence < 20) throw new Error(`amountPence invalid: ${amountPence} (minimum 20)`)
     if (!label)        throw new Error('label is required')
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' })
