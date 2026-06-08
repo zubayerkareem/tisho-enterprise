@@ -2,7 +2,7 @@
 -- Referral system
 -- =============================================================================
 -- Each user gets a unique 8-char referral code derived from their UUID.
--- When a referred user signs up, the referrer earns £10 (1000 pence).
+-- When a referred user signs up, the referrer earns £100 (10000 pence).
 -- =============================================================================
 
 -- ─── Add referral columns to profiles ────────────────────────────────────────
@@ -25,7 +25,7 @@ create table if not exists public.referrals (
   id          uuid primary key default uuid_generate_v4(),
   referrer_id uuid not null references public.profiles(id) on delete cascade,
   referred_id uuid not null unique references public.profiles(id) on delete cascade,
-  bonus_pence bigint not null default 1000,
+  bonus_pence bigint not null default 10000,
   created_at  timestamptz not null default now()
 );
 
@@ -75,9 +75,9 @@ begin
     limit 1;
 
     if v_referrer_id is not null then
-      -- Add £10 bonus to referrer's balance
+      -- Add £100 bonus to referrer's balance
       update public.profiles
-      set referral_balance_pence = referral_balance_pence + 1000,
+      set referral_balance_pence = referral_balance_pence + 10000,
           updated_at = now()
       where id = v_referrer_id;
 
@@ -89,7 +89,7 @@ begin
 
       -- Log the referral event
       insert into public.referrals (referrer_id, referred_id, bonus_pence)
-      values (v_referrer_id, new.id, 1000);
+      values (v_referrer_id, new.id, 10000);
     end if;
   end if;
 
