@@ -121,7 +121,7 @@ function InvestmentRow({ inv, showActions }: { inv: any; showActions: boolean })
           )}
         </div>
 
-        {showActions && isBankPending && (
+        {showActions && inv.status === 'pending' && (
           <div className="flex items-center gap-2 shrink-0">
             <Button
               size="sm"

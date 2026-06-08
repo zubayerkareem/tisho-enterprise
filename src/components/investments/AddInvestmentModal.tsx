@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useState, useRef, useCallback } from 'react'
-import { X, ImageIcon, CheckCircle2, Info, Loader2, Landmark, CreditCard } from 'lucide-react'
+import { X, ImageIcon, CheckCircle2, Info, Loader2, Landmark, CreditCard, Copy, Check } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog'
@@ -185,6 +185,39 @@ function DropZone({ file, preview, onFile, onClear }: {
           <p className="text-xs text-[#7a8a82] mt-0.5">Drag & drop or click to browse · PNG, JPG, WebP</p>
         </div>
       </div>
+    </div>
+  )
+}
+
+function CopyField({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false)
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch { /* ignore */ }
+  }
+  return (
+    <div className="flex items-center gap-1.5 justify-end">
+      <span className="text-white font-medium text-xs text-right">{value}</span>
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={`Copy ${value}`}
+        className="shrink-0 p-1 rounded-md hover:bg-white/15 text-[#abc6b7] hover:text-white transition-colors"
+      >
+        {copied ? <Check size={11} /> : <Copy size={11} />}
+      </button>
+    </div>
+  )
+}
+
+function BankRow({ label, val }: { label: string; val: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <span className="text-[#abc6b7] text-xs shrink-0 pt-0.5">{label}</span>
+      <CopyField value={val} />
     </div>
   )
 }
@@ -492,10 +525,7 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                         { label: 'Address',        val: '86-90 Paul Street, London, EC2A 4NE' },
                         { label: 'Inst. Address',  val: 'Po Box 1130, Cardiff, CF11 1WF' },
                       ].map(r => (
-                        <div key={r.label} className="flex items-start justify-between gap-4">
-                          <span className="text-[#abc6b7] text-xs shrink-0">{r.label}</span>
-                          <span className="text-white font-medium text-xs text-right">{r.val}</span>
-                        </div>
+                        <BankRow key={r.label} label={r.label} val={r.val} />
                       ))}
                     </div>
 
@@ -513,10 +543,7 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                         { label: 'Address',            val: '86-90 Paul Street, London, EC2A 4NE' },
                         { label: 'Inst. Address',      val: 'Po Box 1130, Cardiff, CF11 1WF' },
                       ].map(r => (
-                        <div key={r.label} className="flex items-start justify-between gap-4">
-                          <span className="text-[#abc6b7] text-xs shrink-0">{r.label}</span>
-                          <span className="text-white font-medium text-xs text-right">{r.val}</span>
-                        </div>
+                        <BankRow key={r.label} label={r.label} val={r.val} />
                       ))}
                     </div>
 
@@ -533,10 +560,7 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                         { label: 'Address',      val: '86-90 Paul Street, London, EC2A 4NE' },
                         { label: 'Inst. Address', val: 'Po Box 1130, Cardiff, CF11 1WF' },
                       ].map(r => (
-                        <div key={r.label} className="flex items-start justify-between gap-4">
-                          <span className="text-[#abc6b7] text-xs shrink-0">{r.label}</span>
-                          <span className="text-white font-medium text-xs text-right">{r.val}</span>
-                        </div>
+                        <BankRow key={r.label} label={r.label} val={r.val} />
                       ))}
                     </div>
                   </div>
