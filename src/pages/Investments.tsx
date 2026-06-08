@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PlusCircle, TrendingUp, CheckCircle2, Clock, Loader2, Clock3 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { AddInvestmentModal } from '@/components/investments/AddInvestmentModal'
 import { useInvestments } from '@/api/investments'
+import { toast } from 'sonner'
 import type { InvestmentRow } from '@/api/investments'
 import { usePayments } from '@/api/payments'
 
@@ -183,7 +185,21 @@ function PendingCard({ inv }: { inv: InvestmentRow }) {
 
 export function Investments() {
   const [modalOpen, setModalOpen] = useState(false)
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const { data: investments, isLoading } = useInvestments()
+
+  useEffect(() => {
+    if (searchParams.get('stripe_success') === '1') {
+      toast.success('Payment received', {
+        description: 'Your Stripe payment was successful. Your investment will be activated within 1 business day.',
+      })
+      navigate('/investments', { replace: true })
+    } else if (searchParams.get('stripe_cancelled') === '1') {
+      toast.info('Payment cancelled', { description: 'Your Stripe checkout was cancelled. No charge was made.' })
+      navigate('/investments', { replace: true })
+    }
+  }, [searchParams, navigate])
   const { data: payments } = usePayments()
 
   const receivedByInvestment = (payments ?? []).reduce<Record<string, number>>((acc, p) => {

@@ -1,22 +1,23 @@
 import * as React from 'react'
 import { useState, useRef, useCallback } from 'react'
-import { X, ImageIcon, CheckCircle2, Info, Loader2 } from 'lucide-react'
+import { X, ImageIcon, CheckCircle2, Info, Loader2, Landmark, CreditCard } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 import { compactTierRate } from '@/lib/investments'
-import { useCreateInvestment } from '@/api/investments'
+import { useCreateInvestment, useCreateStripeInvestment } from '@/api/investments'
 import { toast } from 'sonner'
 import type { InvestmentType, PayoutFrequency } from '@/types/models'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+type PaymentMethod = 'bank' | 'stripe'
 
 interface FormState {
   policy: InvestmentType | ''
   amount: string
   payoutFrequency: PayoutFrequency
+  paymentMethod: PaymentMethod | ''
   screenshot: File | null
   screenshotPreview: string | null
 }
@@ -33,16 +34,9 @@ function calcReturns(policy: InvestmentType | '', amount: number) {
 
   if (policy === 'comprehensive') {
     const monthly = (amount * 0.25) / 12
-    return {
-      rate: '25% per year',
-      monthly,
-      total: monthly * 24,
-      principalBack: true,
-      tierNote: null,
-    }
+    return { rate: '25% per year', monthly, total: monthly * 24, principalBack: true, tierNote: null }
   }
 
-  // compact
   const rate = compactTierRate(amount)
   const monthly = (amount * rate) / 100
   return {
@@ -60,9 +54,7 @@ function fmt(n: number) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function PolicyCard({
-  type, selected, onSelect,
-}: { type: InvestmentType; selected: boolean; onSelect: () => void }) {
+function PolicyCard({ type, selected, onSelect }: { type: InvestmentType; selected: boolean; onSelect: () => void }) {
   const isComprehensive = type === 'comprehensive'
   return (
     <button
@@ -70,9 +62,7 @@ function PolicyCard({
       onClick={onSelect}
       className={cn(
         'w-full text-left p-4 rounded-2xl border-2 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003819]',
-        selected
-          ? 'border-[#003819] bg-[#003819]'
-          : 'border-[#e4e7e5] bg-white hover:border-[#c5cdc9]'
+        selected ? 'border-[#003819] bg-[#003819]' : 'border-[#e4e7e5] bg-white hover:border-[#c5cdc9]'
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
@@ -81,8 +71,7 @@ function PolicyCard({
         </span>
         <span className={cn(
           'text-xs font-bold px-2 py-0.5 rounded-full shrink-0',
-          selected
-            ? 'bg-[#c3f63c] text-[#002c14]'
+          selected ? 'bg-[#c3f63c] text-[#002c14]'
             : isComprehensive ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
         )}>
           {isComprehensive ? '25% / year' : '6–10% / month'}
@@ -97,13 +86,44 @@ function PolicyCard({
   )
 }
 
-function DropZone({
-  file, preview, onFile, onClear,
-}: {
-  file: File | null
-  preview: string | null
-  onFile: (f: File) => void
-  onClear: () => void
+function PaymentMethodCard({
+  method, selected, onSelect,
+}: { method: PaymentMethod; selected: boolean; onSelect: () => void }) {
+  const isBank = method === 'bank'
+  const Icon = isBank ? Landmark : CreditCard
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        'w-full text-left p-4 rounded-2xl border-2 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#003819]',
+        selected ? 'border-[#003819] bg-[#003819]' : 'border-[#e4e7e5] bg-white hover:border-[#c5cdc9]'
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <div className={cn(
+          'w-9 h-9 rounded-xl flex items-center justify-center shrink-0',
+          selected ? 'bg-white/15' : 'bg-[#f7f9f8]'
+        )}>
+          <Icon size={18} className={selected ? 'text-[#c3f63c]' : 'text-[#4a5d54]'} />
+        </div>
+        <div>
+          <p className={cn('text-sm font-semibold', selected ? 'text-white' : 'text-[#002c14]')}>
+            {isBank ? 'Bank Transfer' : 'Pay with Stripe'}
+          </p>
+          <p className={cn('text-xs mt-0.5', selected ? 'text-[#abc6b7]' : 'text-[#7a8a82]')}>
+            {isBank
+              ? 'Transfer funds manually · Upload proof of payment'
+              : 'Pay securely by card · Instant confirmation'}
+          </p>
+        </div>
+      </div>
+    </button>
+  )
+}
+
+function DropZone({ file, preview, onFile, onClear }: {
+  file: File | null; preview: string | null; onFile: (f: File) => void; onClear: () => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
@@ -144,9 +164,7 @@ function DropZone({
       onClick={() => inputRef.current?.click()}
       className={cn(
         'w-full border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-150',
-        dragging
-          ? 'border-[#003819] bg-[#003819]/5'
-          : 'border-[#c5cdc9] hover:border-[#003819] hover:bg-[#f7f9f8]'
+        dragging ? 'border-[#003819] bg-[#003819]/5' : 'border-[#c5cdc9] hover:border-[#003819] hover:bg-[#f7f9f8]'
       )}
     >
       <input
@@ -154,10 +172,7 @@ function DropZone({
         type="file"
         accept="image/png,image/jpeg,image/jpg,image/webp"
         className="hidden"
-        onChange={e => {
-          const f = e.target.files?.[0]
-          if (f) onFile(f)
-        }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }}
       />
       <div className="flex flex-col items-center gap-2">
         <div className="w-10 h-10 bg-[#f7f9f8] rounded-xl flex items-center justify-center border border-[#e4e7e5]">
@@ -184,7 +199,6 @@ function ReturnPreview({ policy, amount }: { policy: InvestmentType | ''; amount
         <div className="w-1.5 h-1.5 rounded-full bg-[#c3f63c]" />
         <p className="text-xs font-semibold text-[#4a5d54] uppercase tracking-wider">Estimated Returns</p>
       </div>
-
       <div className="grid grid-cols-3 gap-2">
         {[
           { label: 'Rate', val: r.rate },
@@ -197,18 +211,15 @@ function ReturnPreview({ policy, amount }: { policy: InvestmentType | ''; amount
           </div>
         ))}
       </div>
-
       {r.principalBack && (
         <p className="text-xs text-[#0f7a3d] flex items-center gap-1.5">
           <CheckCircle2 size={12} />
           Your £{fmt(amount)} principal is returned in full at month 24.
         </p>
       )}
-
       {r.tierNote && (
         <p className="text-xs text-[#b87333] flex items-center gap-1.5">
-          <Info size={12} className="shrink-0" />
-          {r.tierNote}
+          <Info size={12} className="shrink-0" />{r.tierNote}
         </p>
       )}
     </div>
@@ -218,12 +229,16 @@ function ReturnPreview({ policy, amount }: { policy: InvestmentType | ''; amount
 // ─── Main modal ───────────────────────────────────────────────────────────────
 
 export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
-  const createInvestment = useCreateInvestment()
+  const createBankInvestment   = useCreateInvestment()
+  const createStripeInvestment = useCreateStripeInvestment()
+
+  const isPending = createBankInvestment.isPending || createStripeInvestment.isPending
 
   const [form, setForm] = useState<FormState>({
     policy: '',
     amount: '',
     payoutFrequency: 'monthly',
+    paymentMethod: '',
     screenshot: null,
     screenshotPreview: null,
   })
@@ -247,8 +262,11 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
     const e: typeof errors = {}
     if (!form.policy) e.policy = 'Please select a policy.'
     if (!form.amount || amountNum <= 0) e.amount = 'Please enter a valid amount.'
-    if (amountNum < 500) e.amount = 'Minimum investment is £500.'
-    if (!form.screenshot) e.screenshot = 'Please upload your bank transfer screenshot.'
+    else if (amountNum < 500) e.amount = 'Minimum investment is £500.'
+    if (!form.paymentMethod) e.paymentMethod = 'Please select a payment method.'
+    if (form.paymentMethod === 'bank' && !form.screenshot) {
+      e.screenshot = 'Please upload your bank transfer screenshot.'
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -256,14 +274,25 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!validate()) return
+
     try {
-      await createInvestment.mutateAsync({
-        type: form.policy as InvestmentType,
-        amountGbp: amountNum,
-        months: 24,
-        screenshotFile: form.screenshot!,
-      })
-      setSubmitted(true)
+      if (form.paymentMethod === 'bank') {
+        await createBankInvestment.mutateAsync({
+          type: form.policy as InvestmentType,
+          amountGbp: amountNum,
+          months: 24,
+          screenshotFile: form.screenshot!,
+        })
+        setSubmitted(true)
+      } else {
+        // Stripe: create investment then redirect
+        const checkoutUrl = await createStripeInvestment.mutateAsync({
+          type: form.policy as InvestmentType,
+          amountGbp: amountNum,
+          months: 24,
+        })
+        window.location.href = checkoutUrl
+      }
     } catch (err: any) {
       toast.error('Submission failed', { description: err.message })
     }
@@ -271,16 +300,20 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
 
   function handleClose() {
     setSubmitted(false)
-    setForm({ policy: '', amount: '', payoutFrequency: 'monthly', screenshot: null, screenshotPreview: null })
+    setForm({ policy: '', amount: '', payoutFrequency: 'monthly', paymentMethod: '', screenshot: null, screenshotPreview: null })
     setErrors({})
     onClose()
   }
+
+  // Step numbering shifts when payout frequency is shown
+  const hasFrequencyStep = form.policy === 'comprehensive'
+  const paymentStep  = hasFrequencyStep ? 4 : 3
+  const screenshotStep = paymentStep + 1
 
   return (
     <Dialog open={open} onOpenChange={v => !v && handleClose()}>
       <DialogContent className="max-w-lg w-full max-h-[90vh] overflow-y-auto p-0 gap-0">
         {submitted ? (
-          // ── Success state ─────────────────────────────────────────────────
           <div className="flex flex-col items-center text-center px-8 py-12 gap-4">
             <div className="w-16 h-16 bg-[#c3f63c] rounded-full flex items-center justify-center">
               <CheckCircle2 size={32} className="text-[#003819]" />
@@ -296,14 +329,13 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
             <Button onClick={handleClose} className="mt-2 w-full sm:w-auto">Back to Investments</Button>
           </div>
         ) : (
-          // ── Form ──────────────────────────────────────────────────────────
           <form onSubmit={handleSubmit} noValidate>
             {/* Header */}
             <div className="px-6 pt-6 pb-4 border-b border-[#e4e7e5]">
               <DialogHeader>
                 <DialogTitle>Add New Investment</DialogTitle>
                 <DialogDescription>
-                  Select your policy, enter the amount you've transferred, and upload your bank transfer screenshot.
+                  Select your policy, enter the amount, choose how to pay, and submit.
                 </DialogDescription>
               </DialogHeader>
             </div>
@@ -311,9 +343,7 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
             <div className="px-6 py-5 space-y-6">
               {/* Step 1 — Policy */}
               <section>
-                <label className="block text-sm font-semibold text-[#002c14] mb-3">
-                  1. Select Policy
-                </label>
+                <label className="block text-sm font-semibold text-[#002c14] mb-3">1. Select Policy</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(['comprehensive', 'compact'] as InvestmentType[]).map(t => (
                     <PolicyCard
@@ -363,8 +393,6 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                     <Info size={11} />{errors.amount}
                   </p>
                 )}
-
-                {/* Quick amount chips */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {[1000, 5000, 10000, 25000, 50000].map(v => (
                     <button
@@ -387,12 +415,10 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                 </div>
               </section>
 
-              {/* Payout frequency (comprehensive only) */}
-              {form.policy === 'comprehensive' && (
+              {/* Step 3 — Payout frequency (comprehensive only) */}
+              {hasFrequencyStep && (
                 <section>
-                  <label className="block text-sm font-semibold text-[#002c14] mb-3">
-                    3. Payout Frequency
-                  </label>
+                  <label className="block text-sm font-semibold text-[#002c14] mb-3">3. Payout Frequency</label>
                   <div className="grid grid-cols-3 gap-2">
                     {(['monthly', 'quarterly', 'annual'] as PayoutFrequency[]).map(f => (
                       <button
@@ -418,53 +444,97 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                 <ReturnPreview policy={form.policy} amount={amountNum} />
               )}
 
-              {/* Bank transfer screenshot upload */}
+              {/* Payment method */}
               <section>
-                <label className="block text-sm font-semibold text-[#002c14] mb-1.5">
-                  {form.policy === 'comprehensive' ? '4' : '3'}. Bank Transfer Screenshot
+                <label className="block text-sm font-semibold text-[#002c14] mb-3">
+                  {paymentStep}. Payment Method
                 </label>
-                <p className="text-xs text-[#7a8a82] mb-3">
-                  Please transfer the funds to our bank account first, then upload a screenshot of the confirmed transfer here.
-                </p>
-
-                {/* Bank details */}
-                <div className="bg-[#003819] rounded-2xl p-4 mb-4 text-sm space-y-1.5">
-                  <p className="text-[#abc6b7] text-xs font-semibold uppercase tracking-wider mb-2">Transfer To</p>
-                  {[
-                    { label: 'Account Name', val: 'Tisho Enterprises Ltd' },
-                    { label: 'Account Number', val: '12345678' },
-                    { label: 'Sort Code', val: '20-45-67' },
-                    { label: 'Reference', val: `INV-${Date.now().toString().slice(-6)}` },
-                  ].map(r => (
-                    <div key={r.label} className="flex items-center justify-between gap-4">
-                      <span className="text-[#abc6b7] text-xs">{r.label}</span>
-                      <span className="text-white font-medium text-xs">{r.val}</span>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(['bank', 'stripe'] as PaymentMethod[]).map(m => (
+                    <PaymentMethodCard
+                      key={m}
+                      method={m}
+                      selected={form.paymentMethod === m}
+                      onSelect={() => {
+                        setForm(p => ({ ...p, paymentMethod: m }))
+                        setErrors(p => ({ ...p, paymentMethod: undefined }))
+                      }}
+                    />
                   ))}
                 </div>
-
-                <DropZone
-                  file={form.screenshot}
-                  preview={form.screenshotPreview}
-                  onFile={handleFile}
-                  onClear={clearFile}
-                />
-                {errors.screenshot && (
+                {errors.paymentMethod && (
                   <p className="text-xs text-[#9c2c2c] mt-1.5 flex items-center gap-1">
-                    <Info size={11} />{errors.screenshot}
+                    <Info size={11} />{errors.paymentMethod}
                   </p>
                 )}
               </section>
+
+              {/* Bank path: bank details + screenshot */}
+              {form.paymentMethod === 'bank' && (
+                <section>
+                  <label className="block text-sm font-semibold text-[#002c14] mb-1.5">
+                    {screenshotStep}. Bank Transfer Screenshot
+                  </label>
+                  <p className="text-xs text-[#7a8a82] mb-3">
+                    Transfer the funds to our account below, then upload a screenshot of the confirmed transfer.
+                  </p>
+                  <div className="bg-[#003819] rounded-2xl p-4 mb-4 text-sm space-y-1.5">
+                    <p className="text-[#abc6b7] text-xs font-semibold uppercase tracking-wider mb-2">Transfer To</p>
+                    {[
+                      { label: 'Account Name',   val: 'Tisho Enterprises Ltd' },
+                      { label: 'Account Number', val: '12345678' },
+                      { label: 'Sort Code',       val: '20-45-67' },
+                      { label: 'Reference',       val: `INV-${Date.now().toString().slice(-6)}` },
+                    ].map(r => (
+                      <div key={r.label} className="flex items-center justify-between gap-4">
+                        <span className="text-[#abc6b7] text-xs">{r.label}</span>
+                        <span className="text-white font-medium text-xs">{r.val}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <DropZone
+                    file={form.screenshot}
+                    preview={form.screenshotPreview}
+                    onFile={handleFile}
+                    onClear={clearFile}
+                  />
+                  {errors.screenshot && (
+                    <p className="text-xs text-[#9c2c2c] mt-1.5 flex items-center gap-1">
+                      <Info size={11} />{errors.screenshot}
+                    </p>
+                  )}
+                </section>
+              )}
+
+              {/* Stripe path: info panel */}
+              {form.paymentMethod === 'stripe' && (
+                <div className="rounded-2xl bg-[#f7f9f8] border border-[#e4e7e5] p-4 flex items-start gap-3">
+                  <div className="w-9 h-9 bg-white rounded-xl border border-[#e4e7e5] flex items-center justify-center shrink-0 mt-0.5">
+                    <CreditCard size={18} className="text-[#4a5d54]" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#002c14]">You'll be redirected to Stripe</p>
+                    <p className="text-xs text-[#7a8a82] mt-1 leading-relaxed">
+                      After clicking Submit, you'll be taken to Stripe's secure checkout to complete your payment by card.
+                      Once payment is confirmed, your investment will be activated within 1 business day.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-[#e4e7e5] flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-              <Button type="button" variant="secondary" onClick={handleClose} disabled={createInvestment.isPending} className="w-full sm:w-auto">
+              <Button type="button" variant="secondary" onClick={handleClose} disabled={isPending} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button type="submit" disabled={createInvestment.isPending} className="w-full sm:w-auto gap-2">
-                {createInvestment.isPending && <Loader2 size={14} className="animate-spin" />}
-                {createInvestment.isPending ? 'Submitting…' : 'Submit Investment Request'}
+              <Button type="submit" disabled={isPending} className="w-full sm:w-auto gap-2">
+                {isPending && <Loader2 size={14} className="animate-spin" />}
+                {isPending
+                  ? (form.paymentMethod === 'stripe' ? 'Redirecting…' : 'Submitting…')
+                  : form.paymentMethod === 'stripe'
+                  ? 'Continue to Stripe →'
+                  : 'Submit Investment Request'}
               </Button>
             </div>
           </form>

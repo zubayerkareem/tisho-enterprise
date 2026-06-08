@@ -82,6 +82,7 @@ export interface Database {
           profit_mode: ProfitMode
           stripe_payment_intent_id: string | null
           transaction_screenshot_url: string | null
+          payment_method: 'bank' | 'stripe'
           created_at: string
           updated_at: string
         }
