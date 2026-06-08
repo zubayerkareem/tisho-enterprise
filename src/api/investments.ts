@@ -134,9 +134,11 @@ export function useCreateStripeInvestment() {
       const amountPence = Math.round(amountGbp * 100)
 
       // Insert the investment record first
-      const { data, error } = await (supabase.from('investments').insert as any)(
-        buildInvestmentInsert(user!.id, type, amountGbp, months, 'stripe')
-      ).select('id').single()
+      const { data, error } = await supabase
+        .from('investments')
+        .insert(buildInvestmentInsert(user!.id, type, amountGbp, months, 'stripe') as any)
+        .select('id')
+        .single()
       if (error) throw error
 
       const investmentId = (data as { id: string }).id

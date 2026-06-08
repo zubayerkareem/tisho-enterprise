@@ -1,5 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno&no-check'
+import Stripe from 'npm:stripe@14.21.0'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -7,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -16,23 +15,27 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('Missing authorization header')
 
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeKey) throw new Error('STRIPE_SECRET_KEY is not set')
+
+    // Verify the calling user
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
-
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     )
     if (authError || !user) throw new Error('Unauthorized')
 
-    const { investmentId, amountPence, label, currency = 'gbp' } = await req.json()
-    if (!investmentId || !amountPence || !label) throw new Error('Missing required fields')
+    const body = await req.json()
+    const { investmentId, amountPence, label, currency = 'gbp' } = body
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
-      apiVersion: '2024-06-20',
-      httpClient: Stripe.createFetchHttpClient(),
-    })
+    if (!investmentId) throw new Error('investmentId is required')
+    if (!amountPence)  throw new Error('amountPence is required')
+    if (!label)        throw new Error('label is required')
+
+    const stripe = new Stripe(stripeKey)
 
     const siteUrl = Deno.env.get('SITE_URL') ?? 'https://dashboard.tishoenterprises.com'
 
@@ -41,22 +44,22 @@ serve(async (req) => {
       line_items: [{
         price_data: {
           currency: currency.toLowerCase(),
-          product_data: { name: label },
+          product_data: { name: `Tisho Enterprises — ${label}` },
           unit_amount: amountPence,
         },
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${siteUrl}/investments?stripe_success=1&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/investments?stripe_cancelled=1`,
       customer_email: user.email,
+      success_url: `${siteUrl}/investments?stripe_success=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:  `${siteUrl}/investments?stripe_cancelled=1`,
       metadata: {
         investment_id: investmentId,
         user_id: user.id,
       },
     })
 
-    // Store the Stripe session ID on the investment record
+    // Persist the session ID on the investment record
     await supabase
       .from('investments')
       .update({ stripe_payment_intent_id: session.id })
@@ -65,12 +68,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ url: session.url }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error('create-stripe-checkout error:', message)
     return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: message }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   }
 })
