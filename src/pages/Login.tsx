@@ -78,10 +78,6 @@ export function Login() {
         </div>
 
         <div>
-          <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 mb-8">
-            <span className="w-2 h-2 rounded-full bg-accent-highlight" />
-            <span className="text-accent-soft text-sm">Trusted by 200+ investors</span>
-          </div>
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
             Your investments,<br />working harder<br />for you.
           </h2>
