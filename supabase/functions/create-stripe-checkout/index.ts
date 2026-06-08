@@ -31,11 +31,13 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { investmentId, amountPence, label, currency = 'gbp' } = body
 
+    console.log('create-stripe-checkout received:', { investmentId, amountPence, label, currency })
+
     if (!investmentId) throw new Error('investmentId is required')
-    if (!amountPence)  throw new Error('amountPence is required')
+    if (!amountPence || amountPence <= 0) throw new Error(`amountPence invalid: ${amountPence}`)
     if (!label)        throw new Error('label is required')
 
-    const stripe = new Stripe(stripeKey)
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' })
 
     const siteUrl = Deno.env.get('SITE_URL') ?? 'https://dashboard.tishoenterprises.com'
 
