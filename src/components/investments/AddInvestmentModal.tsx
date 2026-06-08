@@ -262,7 +262,7 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
     const e: typeof errors = {}
     if (!form.policy) e.policy = 'Please select a policy.'
     if (!form.amount || amountNum <= 0) e.amount = 'Please enter a valid amount.'
-    else if (amountNum < 500) e.amount = 'Minimum investment is £500.'
+    else if (amountNum < 0.20) e.amount = 'Minimum investment is £0.20.'
     if (!form.paymentMethod) e.paymentMethod = 'Please select a payment method.'
     if (form.paymentMethod === 'bank' && !form.screenshot) {
       e.screenshot = 'Please upload your bank transfer screenshot.'
@@ -374,8 +374,8 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                   <input
                     id="amount"
                     type="number"
-                    min="500"
-                    step="100"
+                    min="0.20"
+                    step="0.01"
                     placeholder="e.g. 10000"
                     value={form.amount}
                     onChange={e => {
