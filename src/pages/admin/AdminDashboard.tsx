@@ -18,14 +18,15 @@ function fmt(pence: number) {
 function StatCard({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: any; color: string }) {
   return (
     <Card className="shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <CardContent className="pt-5 pb-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: '#4a5d54' }}>{label}</p>
-            <p className="text-2xl font-bold" style={{ color: '#002c14' }}>{value}</p>
+      <CardContent className="p-3 sm:p-5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1 leading-tight" style={{ color: '#4a5d54' }}>{label}</p>
+            <p className="text-lg sm:text-2xl font-bold break-all leading-tight" style={{ color: '#002c14' }}>{value}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: color + '20' }}>
-            <Icon size={20} style={{ color }} />
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: color + '20' }}>
+            <Icon size={16} className="sm:hidden" style={{ color }} />
+            <Icon size={20} className="hidden sm:block" style={{ color }} />
           </div>
         </div>
       </CardContent>
@@ -68,15 +69,15 @@ function PendingInvestmentRow({ inv }: { inv: any }) {
           {new Date(inv.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </p>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         <Button
           size="sm"
           onClick={handleApprove}
           disabled={approve.isPending || reject.isPending}
-          className="gap-1"
+          className="gap-1 px-2 text-xs h-7"
           style={{ backgroundColor: '#003819', color: 'white' }}
         >
-          {approve.isPending ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+          {approve.isPending ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle size={11} />}
           Approve
         </Button>
         <Button
@@ -84,10 +85,10 @@ function PendingInvestmentRow({ inv }: { inv: any }) {
           variant="ghost"
           onClick={handleReject}
           disabled={approve.isPending || reject.isPending}
-          className="gap-1 border"
+          className="gap-1 border px-2 text-xs h-7"
           style={{ borderColor: '#9c2c2c', color: '#9c2c2c', backgroundColor: 'transparent' }}
         >
-          {reject.isPending ? <Loader2 size={12} className="animate-spin" /> : <XCircle size={12} />}
+          {reject.isPending ? <Loader2 size={11} className="animate-spin" /> : <XCircle size={11} />}
           Reject
         </Button>
       </div>
