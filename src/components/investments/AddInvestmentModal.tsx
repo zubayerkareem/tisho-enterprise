@@ -478,19 +478,67 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                   <p className="text-xs text-[#7a8a82] mb-3">
                     Transfer the funds to our account below, then upload a screenshot of the confirmed transfer.
                   </p>
-                  <div className="bg-[#003819] rounded-2xl p-4 mb-4 text-sm space-y-1.5">
-                    <p className="text-[#abc6b7] text-xs font-semibold uppercase tracking-wider mb-2">Transfer To</p>
-                    {[
-                      { label: 'Account Name',   val: 'Tisho Enterprises Ltd' },
-                      { label: 'Account Number', val: '12345678' },
-                      { label: 'Sort Code',       val: '20-45-67' },
-                      { label: 'Reference',       val: `INV-${Date.now().toString().slice(-6)}` },
-                    ].map(r => (
-                      <div key={r.label} className="flex items-center justify-between gap-4">
-                        <span className="text-[#abc6b7] text-xs">{r.label}</span>
-                        <span className="text-white font-medium text-xs">{r.val}</span>
-                      </div>
-                    ))}
+                  <div className="bg-[#003819] rounded-2xl p-4 mb-4 text-sm space-y-3">
+                    {/* UK / Domestic */}
+                    <div className="space-y-1.5">
+                      <p className="text-[#abc6b7] text-xs font-semibold uppercase tracking-wider">UK Bank Transfer</p>
+                      {[
+                        { label: 'Account Type',   val: 'Business' },
+                        { label: 'Account Name',   val: 'TISHO ENTERPRISES LTD' },
+                        { label: 'Sort Code',      val: '23-11-85' },
+                        { label: 'Account Number', val: '49171401' },
+                        { label: 'Reference',      val: `INV-${Date.now().toString().slice(-6)}` },
+                        { label: 'Institution',    val: 'Payrnet' },
+                        { label: 'Address',        val: '86-90 Paul Street, London, EC2A 4NE' },
+                        { label: 'Inst. Address',  val: 'Po Box 1130, Cardiff, CF11 1WF' },
+                      ].map(r => (
+                        <div key={r.label} className="flex items-start justify-between gap-4">
+                          <span className="text-[#abc6b7] text-xs shrink-0">{r.label}</span>
+                          <span className="text-white font-medium text-xs text-right">{r.val}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-[#ffffff1a]" />
+
+                    {/* SWIFT / International */}
+                    <div className="space-y-1.5">
+                      <p className="text-[#abc6b7] text-xs font-semibold uppercase tracking-wider">International (SWIFT)</p>
+                      {[
+                        { label: 'Account Name',       val: 'TISHO ENTERPRISES LTD' },
+                        { label: 'IBAN',               val: 'GB96PAYR23118549171401' },
+                        { label: 'BIC/SWIFT',          val: 'PAYRGB2LXXX' },
+                        { label: 'Intermediary SWIFT', val: 'NWBKGB2L' },
+                        { label: 'Institution',        val: 'Payrnet' },
+                        { label: 'Address',            val: '86-90 Paul Street, London, EC2A 4NE' },
+                        { label: 'Inst. Address',      val: 'Po Box 1130, Cardiff, CF11 1WF' },
+                      ].map(r => (
+                        <div key={r.label} className="flex items-start justify-between gap-4">
+                          <span className="text-[#abc6b7] text-xs shrink-0">{r.label}</span>
+                          <span className="text-white font-medium text-xs text-right">{r.val}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-[#ffffff1a]" />
+
+                    {/* SEPA */}
+                    <div className="space-y-1.5">
+                      <p className="text-[#abc6b7] text-xs font-semibold uppercase tracking-wider">International (SEPA)</p>
+                      {[
+                        { label: 'Account Name', val: 'TISHO ENTERPRISES LTD' },
+                        { label: 'SEPA IBAN',    val: 'GB88PAYR00987687162509' },
+                        { label: 'SEPA BIC',     val: 'PAYRGB21' },
+                        { label: 'Institution',  val: 'Payrnet' },
+                        { label: 'Address',      val: '86-90 Paul Street, London, EC2A 4NE' },
+                        { label: 'Inst. Address', val: 'Po Box 1130, Cardiff, CF11 1WF' },
+                      ].map(r => (
+                        <div key={r.label} className="flex items-start justify-between gap-4">
+                          <span className="text-[#abc6b7] text-xs shrink-0">{r.label}</span>
+                          <span className="text-white font-medium text-xs text-right">{r.val}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <DropZone
                     file={form.screenshot}
