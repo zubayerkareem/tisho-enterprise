@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { PlusCircle, TrendingUp, CheckCircle2, Clock, Loader2, Clock3 } from 'lucide-react'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { PlusCircle, TrendingUp, CheckCircle2, Clock, Loader2, Clock3, AlertCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -10,6 +10,7 @@ import { useInvestments } from '@/api/investments'
 import { toast } from 'sonner'
 import type { InvestmentRow } from '@/api/investments'
 import { usePayments } from '@/api/payments'
+import { useAuth } from '@/lib/auth/AuthContext'
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -187,6 +188,7 @@ export function Investments() {
   const [modalOpen, setModalOpen] = useState(false)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const { data: investments, isLoading } = useInvestments()
 
   useEffect(() => {
@@ -212,6 +214,49 @@ export function Investments() {
   const active    = (investments ?? []).filter(i => i.status === 'active')
   const pending   = (investments ?? []).filter(i => i.status === 'pending')
   const completed = (investments ?? []).filter(i => i.status === 'completed')
+
+  // ─── KYC Gate ─────────────────────────────────────────────────────────────
+  if (profile && profile.kyc_status !== 'approved') {
+    const isPending  = profile.kyc_status === 'pending'
+    const isRejected = profile.kyc_status === 'rejected'
+    return (
+      <div className="max-w-lg mx-auto py-8">
+        <Card>
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${isRejected ? 'bg-red-100' : 'bg-amber-50'}`}>
+              <AlertCircle size={28} className={isRejected ? 'text-red-600' : 'text-amber-600'} />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-[#002c14]">
+                {isRejected ? 'Application Not Approved' : 'KYC Required'}
+              </h2>
+              <p className="text-sm text-[#7a8a82] mt-2 leading-relaxed max-w-sm mx-auto">
+                {isRejected
+                  ? 'Your investor application was not approved. Please contact support or re-apply.'
+                  : 'Complete your investor KYC application to unlock investments. It takes about 5 minutes.'}
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+              {isPending && (
+                <Link to="/apply">
+                  <Button>Complete KYC Application</Button>
+                </Link>
+              )}
+              {isRejected && (
+                <>
+                  <Link to="/apply"><Button>Re-apply</Button></Link>
+                  <Link to="/support"><Button variant="secondary">Contact Support</Button></Link>
+                </>
+              )}
+              <Link to="/settings">
+                <Button variant="secondary">View KYC Status</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-5">

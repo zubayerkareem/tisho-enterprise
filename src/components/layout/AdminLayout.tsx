@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, TrendingUp, CreditCard, Gift,
-  MessageSquare, ArrowUpFromLine, LogOut, X, Menu, ChevronLeft,
+  MessageSquare, ArrowUpFromLine, LogOut, X, Menu, ChevronLeft, FileCheck,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -23,7 +23,8 @@ const navItems: NavItem[] = [
   { to: '/admin/payments',    icon: CreditCard,       label: 'Payments' },
   { to: '/admin/referrals',   icon: Gift,             label: 'Referrals' },
   { to: '/admin/support',     icon: MessageSquare,    label: 'Support',     badgeKey: 'openSupportThreads' },
-  { to: '/admin/withdrawals', icon: ArrowUpFromLine,  label: 'Withdrawals', badgeKey: 'pendingWithdrawals' },
+  { to: '/admin/withdrawals',   icon: ArrowUpFromLine,  label: 'Withdrawals',   badgeKey: 'pendingWithdrawals' },
+  { to: '/admin/applications',  icon: FileCheck,        label: 'Applications',  badgeKey: 'pendingApplications' },
 ]
 
 function AdminSidebar({ onClose }: { onClose?: () => void }) {
