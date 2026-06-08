@@ -54,6 +54,13 @@ function ApplicationRow({ app }: { app: any }) {
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <p className="text-sm font-semibold text-[#002c14]">{profile?.name ?? 'Unknown'}</p>
             <StatusPill status={app.status} />
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+              app.policy_type === 'compact'
+                ? 'bg-indigo-50 text-indigo-700'
+                : 'bg-emerald-50 text-[#0f7a3d]'
+            }`}>
+              {app.policy_type === 'compact' ? 'Compact' : 'Capital Return'}
+            </span>
           </div>
           <p className="text-xs text-[#4a5d54]">{profile?.email ?? ''}</p>
           <p className="text-xs text-[#7a8a82] mt-0.5">
@@ -121,6 +128,7 @@ function ApplicationRow({ app }: { app: any }) {
             ['Date of Birth', app.date_of_birth], ['Nationality', app.nationality],
             ['Occupation', app.occupation], ['Phone', app.phone],
             ['Account Name', app.account_name], ['Account Number', app.account_number],
+            ...(app.sort_code ? [['Sort Code / Swift', app.sort_code]] : []),
             ['Bank & Branch', app.bank_and_branch], ['Payout Frequency', app.payout_frequency],
             ['ID Details', app.id_details], ['Next of Kin', app.next_of_kin],
             ['NOK Contact', app.next_of_kin_contact], ['Payment Mode', app.payment_mode],

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { useMyApplication, useSubmitApplication, type PolicyType } from '@/api/applications'
+import { useMyApplication, useSubmitApplication } from '@/api/applications'
 import { printApplicationPDF } from '@/lib/applicationPDF'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -15,7 +15,7 @@ interface FormData {
   gender: string; marital_status: string; date_of_birth: string
   nationality: string; occupation: string; postal_address: string
   physical_address: string; phone: string; fax: string; website: string
-  account_name: string; account_number: string; bank_and_branch: string
+  account_name: string; account_number: string; sort_code: string; bank_and_branch: string
   payout_frequency: string
   id_details: string; next_of_kin: string; next_of_kin_contact: string
   facebook: string; twitter: string; other_social: string
@@ -26,7 +26,7 @@ interface FormData {
 const EMPTY: FormData = {
   gender: '', marital_status: '', date_of_birth: '', nationality: '',
   occupation: '', postal_address: '', physical_address: '', phone: '',
-  fax: '', website: '', account_name: '', account_number: '',
+  fax: '', website: '', account_name: '', account_number: '', sort_code: '',
   bank_and_branch: '', payout_frequency: 'monthly', id_details: '',
   next_of_kin: '', next_of_kin_contact: '', facebook: '', twitter: '',
   other_social: '', payment_mode: 'Bank Transfer', self_description: '',
@@ -97,18 +97,18 @@ function ReviewRow({ label, val }: { label: string; val: string }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export function Apply() {
+export function ApplyCompact() {
   const { profile } = useAuth()
   const navigate = useNavigate()
-  const submit = useSubmitApplication('capital_return' as PolicyType)
-  const { data: existing, isLoading: loadingExisting } = useMyApplication('capital_return')
+  const submit = useSubmitApplication('compact')
+  const { data: existing, isLoading: loadingExisting } = useMyApplication('compact')
 
   const [step, setStep]   = useState(1)
   const [form, setForm]   = useState<FormData>(EMPTY)
   const [agreed, setAgreed] = useState(false)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData | 'agreed', string>>>({})
   const [done, setDone]   = useState(false)
-  const [savedData, setSavedData] = useState<(FormData & { agreed_at: string }) | null>(null)
+  const [savedData, setSavedData] = useState<(FormData & { agreed_at: string; policy_type: string }) | null>(null)
 
   const name  = profile?.name  ?? ''
   const email = profile?.email ?? ''
@@ -132,6 +132,7 @@ export function Apply() {
     } else if (s === 2) {
       if (!form.account_name.trim())        e.account_name    = 'Required'
       if (!form.account_number.trim())      e.account_number  = 'Required'
+      if (!form.sort_code.trim())           e.sort_code       = 'Required'
       if (!form.bank_and_branch.trim())     e.bank_and_branch = 'Required'
     } else if (s === 3) {
       if (!form.id_details.trim())          e.id_details          = 'Required'
@@ -153,7 +154,7 @@ export function Apply() {
     const payload = { ...form, agreed_at: new Date().toISOString() }
     try {
       await submit.mutateAsync(payload)
-      setSavedData(payload)
+      setSavedData({ ...payload, policy_type: 'compact' })
       setDone(true)
     } catch (err: any) {
       toast.error('Submission failed', { description: err.message })
@@ -177,7 +178,7 @@ export function Apply() {
       submitted: 'bg-amber-50',
     }
     const msgMap: Record<string, string> = {
-      approved: 'Your application has been approved. You can now make investments.',
+      approved: 'Your Compact Policy application has been approved.',
       rejected: `Your application was not approved.${existing.admin_note ? ` Reason: ${existing.admin_note}` : ' Contact support for more information.'}`,
       submitted: 'Your application is under review. We will notify you once a decision is made (1–2 business days).',
     }
@@ -229,7 +230,7 @@ export function Apply() {
             <div>
               <h2 className="text-xl font-bold text-[#002c14]">Application Submitted!</h2>
               <p className="text-sm text-[#7a8a82] mt-2 leading-relaxed max-w-sm mx-auto">
-                Your investor application has been received. Our team will review it and approve your account within 1–2 business days.
+                Your Compact Policy application has been received. Our team will review it within 1–2 business days.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
@@ -250,8 +251,8 @@ export function Apply() {
     <div className="max-w-2xl mx-auto space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-[#002c14]">Investor Application</h1>
-        <p className="text-sm text-[#7a8a82] mt-1">Complete all sections to become a verified investor. Required before making investments.</p>
+        <h1 className="text-xl font-bold text-[#002c14]">Apply for Compact Policy</h1>
+        <p className="text-sm text-[#7a8a82] mt-1">Monthly returns of 10–14%. Complete all sections to apply. Required before making compact policy investments.</p>
       </div>
 
       {/* Step indicator */}
@@ -334,12 +335,15 @@ export function Apply() {
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="text-base font-semibold text-[#002c14]">Section B — Bank & Payout Details</h2>
-              <p className="text-xs text-[#7a8a82]">Provide the bank account where your investment returns will be sent.</p>
+              <p className="text-xs text-[#7a8a82]">Provide the bank account where your monthly investment returns will be sent.</p>
               <Field label="Account Name" required error={errors.account_name}>
                 <input value={form.account_name} onChange={e => set('account_name', e.target.value)} placeholder="Name on bank account" className={iCls} />
               </Field>
               <Field label="Account Number" required error={errors.account_number}>
                 <input value={form.account_number} onChange={e => set('account_number', e.target.value)} placeholder="e.g. 12345678" className={iCls} />
+              </Field>
+              <Field label="Sort Code / Swift Code" required error={errors.sort_code}>
+                <input value={form.sort_code} onChange={e => set('sort_code', e.target.value)} placeholder="e.g. 20-00-00 or BARCGB22" className={iCls} />
               </Field>
               <Field label="Bank & Branch" required error={errors.bank_and_branch}>
                 <input value={form.bank_and_branch} onChange={e => set('bank_and_branch', e.target.value)} placeholder="e.g. Barclays Bank, London" className={iCls} />
@@ -351,17 +355,22 @@ export function Apply() {
 
               {/* Rate table */}
               <div className="rounded-2xl bg-[#f7f9f8] border border-[#e4e7e5] p-4 mt-2">
-                <p className="text-xs font-semibold text-[#4a5d54] uppercase tracking-wider mb-3">Capital Return Rates (Section F)</p>
+                <p className="text-xs font-semibold text-[#4a5d54] uppercase tracking-wider mb-3">Compact Policy Rates (Monthly) — Section F</p>
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-[#e4e7e5]">
                       <th className="text-left pb-2 font-semibold text-[#7a8a82]">Capital (GBP)</th>
-                      <th className="text-right pb-2 font-semibold text-[#7a8a82]">Annual Return</th>
+                      <th className="text-right pb-2 font-semibold text-[#7a8a82]">Monthly Return</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {[['£0 – £5,000','25%'],['£5,001 – £50,000','30%'],['£50,001 – £500,000','35%'],
-                      ['£500,001 – £5,000,000','40%'],['Over £5,000,000','42%']].map(([c,r]) => (
+                    {[
+                      ['£0 – £5,000',               '10%'],
+                      ['£5,001 – £50,000',          '11%'],
+                      ['£50,001 – £500,000',         '12%'],
+                      ['£500,001 – £5,000,000',      '13%'],
+                      ['Over £5,000,000',            '14%'],
+                    ].map(([c, r]) => (
                       <tr key={c} className="border-b border-[#e4e7e5] last:border-0">
                         <td className="py-1.5 text-[#002c14]">{c}</td>
                         <td className="py-1.5 text-right font-bold text-[#0f7a3d]">{r}</td>
@@ -440,7 +449,8 @@ export function Apply() {
                 ]},
                 { title: 'Section B – Bank & Payout', rows: [
                   ['Account Name', form.account_name], ['Account Number', form.account_number],
-                  ['Bank & Branch', form.bank_and_branch], ['Payout Frequency', form.payout_frequency],
+                  ['Sort Code / Swift', form.sort_code], ['Bank & Branch', form.bank_and_branch],
+                  ['Payout Frequency', form.payout_frequency],
                 ]},
                 { title: 'Section C/D – KYC & Payment', rows: [
                   ['ID Details', form.id_details], ['Next of Kin', form.next_of_kin],
@@ -455,10 +465,10 @@ export function Apply() {
 
               {/* T&C */}
               <div className="rounded-2xl border border-[#e4e7e5] bg-[#f7f9f8] p-4">
-                <p className="text-xs font-semibold text-[#002c14] uppercase tracking-wider mb-3">Terms and Conditions</p>
+                <p className="text-xs font-semibold text-[#002c14] uppercase tracking-wider mb-3">Terms and Conditions — Compact Policy</p>
                 <ol className="space-y-2 text-xs text-[#4a5d54] list-decimal pl-4 leading-relaxed">
                   {[
-                    'The investor enjoys between 25% and 42% returns per annum on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the investor receives back the initial investment capital and the contract is terminated, but may re-invest to renew.',
+                    'The investor enjoys between 10 and 14% returns per month on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the contract is terminated but the investor can re-invest to renew the contract.',
                     'Anyone who refers an investor that successfully invests is credited £100 to their referral balance as a one-time commission.',
                     'Monthly portfolio updates will be made available through the Tisho Enterprises platform and via registered email.',
                     'A unique investor reference number is issued to all investors upon application approval.',

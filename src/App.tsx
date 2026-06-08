@@ -16,6 +16,7 @@ import { Support } from '@/pages/Support'
 import { Settings } from '@/pages/Settings'
 import { Referral } from '@/pages/Referral'
 import { Apply } from '@/pages/Apply'
+import { ApplyCompact } from '@/pages/ApplyCompact'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
 import { AdminApplications } from '@/pages/admin/AdminApplications'
 import { AdminUsers } from '@/pages/admin/AdminUsers'
@@ -60,6 +61,7 @@ export default function App() {
               <Route path="support"        element={<Support />} />
               <Route path="settings"       element={<Settings />} />
               <Route path="apply"          element={<Apply />} />
+              <Route path="apply-compact" element={<ApplyCompact />} />
             </Route>
             <Route
               path="/admin"

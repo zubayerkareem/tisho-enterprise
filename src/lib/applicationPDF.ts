@@ -3,6 +3,8 @@ export function printApplicationPDF(
   name: string,
   email: string,
 ) {
+  const isCompact = data.policy_type === 'compact'
+
   const fmt = (d?: string) =>
     d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
 
@@ -18,6 +20,49 @@ export function printApplicationPDF(
   const section = (title: string, content: string) => `
     <div class="section-title">${title}</div>
     ${content}`
+
+  const sectionBCompact = section('SECTION B – BANK & PAYOUT DETAILS',
+    row(field('Account Name', data.account_name), field('Account Number', data.account_number)) +
+    row(field('Sort Code / Swift Code', data.sort_code), field('Bank & Branch', data.bank_and_branch)) +
+    row(field('Payout Frequency', data.payout_frequency))
+  )
+
+  const sectionBCapital = section('SECTION B – BANK & PAYOUT DETAILS',
+    row(field('Account Name', data.account_name), field('Account Number', data.account_number)) +
+    row(field('Bank & Branch', data.bank_and_branch), field('Payout Frequency', data.payout_frequency))
+  )
+
+  const sectionF = isCompact
+    ? section('SECTION F – COMPACT POLICY RATES (MONTHLY)',
+        `<table>
+          <thead><tr><th>Capital (GBP)</th><th>Monthly Return</th></tr></thead>
+          <tbody>
+            <tr><td>£0 – £5,000</td><td>10%</td></tr>
+            <tr><td>£5,001 – £50,000</td><td>11%</td></tr>
+            <tr><td>£50,001 – £500,000</td><td>12%</td></tr>
+            <tr><td>£500,001 – £5,000,000</td><td>13%</td></tr>
+            <tr><td>Over £5,000,000</td><td>14%</td></tr>
+          </tbody>
+        </table>`
+      )
+    : section('SECTION F – CAPITAL RETURN RATES (ANNUAL)',
+        `<table>
+          <thead><tr><th>Capital (GBP)</th><th>Annual Return</th></tr></thead>
+          <tbody>
+            <tr><td>£0 – £5,000</td><td>25%</td></tr>
+            <tr><td>£5,001 – £50,000</td><td>30%</td></tr>
+            <tr><td>£50,001 – £500,000</td><td>35%</td></tr>
+            <tr><td>£500,001 – £5,000,000</td><td>40%</td></tr>
+            <tr><td>Over £5,000,000</td><td>42%</td></tr>
+          </tbody>
+        </table>`
+      )
+
+  const tnc1 = isCompact
+    ? 'The investor enjoys between 10 and 14% returns per month on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the contract is terminated but the investor can re-invest to renew the contract.'
+    : 'The investor enjoys between 25% and 42% returns per annum on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the investor receives back the initial investment capital and the contract is terminated, but the investor may re-invest to renew the contract.'
+
+  const policyLabel = isCompact ? 'COMPACT POLICY' : 'CAPITAL RETURN POLICY'
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -57,7 +102,7 @@ export function printApplicationPDF(
 <body><div class="page">
   <div class="header">
     <div class="co">TISHO ENTERPRISES LTD</div>
-    <div class="title">INVESTOR APPLICATION FORM – CAPITAL RETURN POLICY</div>
+    <div class="title">INVESTOR APPLICATION FORM – ${policyLabel}</div>
     <div class="meta">
       Submitted: ${fmt(data.submitted_at ?? new Date().toISOString())}
       &nbsp;|&nbsp;
@@ -74,10 +119,7 @@ export function printApplicationPDF(
     row(field('Physical Address', data.physical_address))
   )}
 
-  ${section('SECTION B – BANK & PAYOUT DETAILS',
-    row(field('Account Name', data.account_name), field('Account Number', data.account_number)) +
-    row(field('Bank & Branch', data.bank_and_branch), field('Payout Frequency', data.payout_frequency))
-  )}
+  ${isCompact ? sectionBCompact : sectionBCapital}
 
   ${section('SECTION C – IDENTITY & NEXT OF KIN',
     row(field('Valid Identification Details', data.id_details)) +
@@ -93,22 +135,11 @@ export function printApplicationPDF(
     `<div class="text-area">${(data.self_description ?? '').replace(/\n/g, '<br>')}</div>`
   )}
 
-  ${section('SECTION F – CAPITAL RETURN RATES (ANNUAL)',
-    `<table>
-      <thead><tr><th>Capital (GBP)</th><th>Annual Return</th></tr></thead>
-      <tbody>
-        <tr><td>£0 – £5,000</td><td>25%</td></tr>
-        <tr><td>£5,001 – £50,000</td><td>30%</td></tr>
-        <tr><td>£50,001 – £500,000</td><td>35%</td></tr>
-        <tr><td>£500,001 – £5,000,000</td><td>40%</td></tr>
-        <tr><td>Over £5,000,000</td><td>42%</td></tr>
-      </tbody>
-    </table>`
-  )}
+  ${sectionF}
 
   ${section('TERMS AND CONDITIONS',
     `<div class="tnc"><ol>
-      <li>The investor enjoys between 25% and 42% returns per annum on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the investor receives back the initial investment capital and the contract is terminated, but the investor may re-invest to renew the contract.</li>
+      <li>${tnc1}</li>
       <li>Anyone who refers an investor that successfully invests is credited £100 to their referral balance as a one-time commission.</li>
       <li>Monthly portfolio updates will be made available through the Tisho Enterprises platform and via the registered email address.</li>
       <li>A unique investor reference number is issued to all investors upon application approval.</li>

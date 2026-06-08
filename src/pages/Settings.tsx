@@ -23,10 +23,86 @@ function SectionCard({ icon: Icon, title, children }: {
   )
 }
 
+function ApplicationStatus({
+  label, route, policyType, application, loading, name, email,
+}: {
+  label: string
+  route: string
+  policyType: 'capital_return' | 'compact'
+  application: any
+  loading: boolean
+  name: string
+  email: string
+}) {
+  const navigate = useNavigate()
+  if (loading) return (
+    <div className="h-14 flex items-center justify-center">
+      <div className="w-4 h-4 border-2 border-[#003819] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
+  if (!application) return (
+    <div className="flex items-center justify-between gap-4 p-3 rounded-xl border border-dashed border-[#e4e7e5]">
+      <div>
+        <p className="text-sm font-medium text-[#002c14]">{label}</p>
+        <p className="text-xs text-[#7a8a82] mt-0.5">Not submitted</p>
+      </div>
+      <Button size="sm" onClick={() => navigate(route)}>Apply</Button>
+    </div>
+  )
+
+  const statusColor = {
+    approved: { bg: 'bg-[#f0fdf4] border-emerald-200', icon: 'text-[#0f7a3d]', iconBg: 'bg-emerald-100', IconEl: CheckCircle2 },
+    submitted: { bg: 'bg-amber-50 border-amber-200', icon: 'text-amber-600', iconBg: 'bg-amber-100', IconEl: Clock },
+    rejected:  { bg: 'bg-red-50 border-red-200',     icon: 'text-red-600',    iconBg: 'bg-red-100',    IconEl: AlertCircle },
+  }[application.status] ?? { bg: 'bg-[#f7f9f8] border-[#e4e7e5]', icon: 'text-[#7a8a82]', iconBg: 'bg-[#e4e7e5]', IconEl: Clock }
+
+  const { IconEl } = statusColor
+
+  return (
+    <div className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${statusColor.bg}`}>
+      <div className="flex items-center gap-3 min-w-0">
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${statusColor.iconBg}`}>
+          <IconEl size={15} className={statusColor.icon} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-[#002c14]">{label}</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <Badge variant={application.status === 'approved' ? 'active' : application.status === 'rejected' ? 'rejected' : 'pending'}>
+              {application.status}
+            </Badge>
+            {application.reviewed_at && (
+              <span className="text-xs text-[#7a8a82]">
+                {new Date(application.reviewed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+            )}
+          </div>
+          {application.admin_note && (
+            <p className="text-xs text-[#9c2c2c] mt-0.5 truncate">Reason: {application.admin_note}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 shrink-0">
+        <button
+          onClick={() => printApplicationPDF({ ...application, policy_type: policyType }, name, email)}
+          className="p-1.5 rounded-lg hover:bg-white/60 text-[#4a5d54] hover:text-[#002c14] transition-colors"
+          title="Download PDF"
+        >
+          <Download size={13} />
+        </button>
+        {application.status === 'rejected' && (
+          <Button size="sm" onClick={() => navigate(route)}>Re-apply</Button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function Settings() {
   const navigate = useNavigate()
   const { profile } = useAuth()
-  const { data: application, isLoading: loadingApp } = useMyApplication()
+  const { data: capitalApp, isLoading: loadingCapital } = useMyApplication('capital_return')
+  const { data: compactApp,  isLoading: loadingCompact  } = useMyApplication('compact')
 
   const name  = profile?.name  ?? ''
   const email = profile?.email ?? ''
@@ -91,106 +167,33 @@ export function Settings() {
         </div>
       </SectionCard>
 
-      {/* KYC / Application */}
+      {/* KYC / Applications */}
       <SectionCard icon={FileCheck} title="KYC Verification">
-        {loadingApp ? (
-          <div className="h-20 flex items-center justify-center">
-            <div className="w-5 h-5 border-2 border-[#003819] border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : !application ? (
-          /* No application yet */
-          <div className="rounded-2xl border-2 border-dashed border-[#e4e7e5] p-6 text-center">
-            <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <AlertCircle size={22} className="text-amber-600" />
-            </div>
-            <p className="text-sm font-semibold text-[#002c14] mb-1">KYC Not Submitted</p>
-            <p className="text-xs text-[#7a8a82] mb-4 leading-relaxed">
-              Complete your investor application to unlock investing. It takes about 5 minutes.
-            </p>
-            <Button size="sm" onClick={() => navigate('/apply')}>
-              Complete Application
-            </Button>
-          </div>
-        ) : application.status === 'submitted' ? (
-          /* Under review */
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 md:p-4 bg-amber-50 rounded-xl border border-amber-200">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                  <Clock size={16} className="text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#002c14]">Application Under Review</p>
-                  <p className="text-xs text-amber-700">
-                    Submitted {application.submitted_at ? new Date(application.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
-                  </p>
-                </div>
-              </div>
-              <Badge variant="pending">pending</Badge>
-            </div>
-            <p className="text-xs text-[#7a8a82]">Our team will review your application within 1–2 business days and notify you by email.</p>
-            <Button variant="secondary" size="sm" className="gap-2"
-              onClick={() => printApplicationPDF(application, name, email)}>
-              <Download size={13} /> Download PDF
-            </Button>
-          </div>
-        ) : application.status === 'approved' ? (
-          /* Approved */
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 md:p-4 bg-[#f0fdf4] rounded-xl border border-emerald-200">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={16} className="text-[#0f7a3d]" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#002c14]">KYC Verified</p>
-                  <p className="text-xs text-[#7a8a82]">
-                    Approved {application.reviewed_at ? new Date(application.reviewed_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
-                  </p>
-                </div>
-              </div>
-              <Badge variant="active">approved</Badge>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              {[
-                ['Account Name',   application.account_name  ?? '—'],
-                ['Account Number', application.account_number ?? '—'],
-                ['Bank',          application.bank_and_branch ?? '—'],
-              ].map(([l, v]) => (
-                <div key={l} className="bg-[#f7f9f8] rounded-xl p-2.5 border border-[#e4e7e5]">
-                  <p className="text-[#7a8a82] mb-0.5">{l}</p>
-                  <p className="font-medium text-[#002c14] truncate">{v}</p>
-                </div>
-              ))}
-            </div>
-            <Button variant="secondary" size="sm" className="gap-2"
-              onClick={() => printApplicationPDF(application, name, email)}>
-              <Download size={13} /> Download PDF
-            </Button>
-          </div>
-        ) : (
-          /* Rejected */
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 md:p-4 bg-red-50 rounded-xl border border-red-200">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
-                  <AlertCircle size={16} className="text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#002c14]">Application Not Approved</p>
-                  {application.admin_note && (
-                    <p className="text-xs text-red-600 mt-0.5">Reason: {application.admin_note}</p>
-                  )}
-                </div>
-              </div>
-              <Badge variant="rejected">rejected</Badge>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" onClick={() => navigate('/apply')}>Re-apply</Button>
-              <Button variant="secondary" size="sm" onClick={() => navigate('/support')}>Contact Support</Button>
-            </div>
-          </div>
-        )}
+        <div className="space-y-3">
+          <p className="text-xs text-[#7a8a82] leading-relaxed">
+            Apply for a policy to become a verified investor. Each policy has its own application.
+          </p>
+
+          <ApplicationStatus
+            label="Capital Return Policy"
+            route="/apply"
+            policyType="capital_return"
+            application={capitalApp}
+            loading={loadingCapital}
+            name={name}
+            email={email}
+          />
+
+          <ApplicationStatus
+            label="Compact Policy"
+            route="/apply-compact"
+            policyType="compact"
+            application={compactApp}
+            loading={loadingCompact}
+            name={name}
+            email={email}
+          />
+        </div>
       </SectionCard>
 
       {/* Notifications */}
