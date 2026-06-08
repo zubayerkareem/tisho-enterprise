@@ -54,9 +54,9 @@ export function Referral() {
               <Gift size={22} className="text-[#003819]" />
             </div>
             <div>
-              <h2 className="text-white font-bold text-lg leading-tight">Refer & Earn £10</h2>
+              <h2 className="text-white font-bold text-lg leading-tight">Refer & Earn £100</h2>
               <p className="text-[#abc6b7] text-sm mt-1 leading-relaxed">
-                Share your referral link. Every time a friend signs up using your link, you earn <strong className="text-[#c3f63c]">£10</strong> added instantly to your referral balance.
+                Share your referral link. Every time a friend signs up using your link, you earn <strong className="text-[#c3f63c]">£100</strong> added instantly to your referral balance.
               </p>
             </div>
           </div>
@@ -91,7 +91,7 @@ export function Referral() {
             <CopyButton text={referralLink} />
           </div>
           <p className="text-xs text-[#7a8a82] mt-2 px-1">
-            Share this link with friends. When they register, you automatically receive £10.
+            Share this link with friends. When they register, you automatically receive £100.
           </p>
         </CardContent>
       </Card>
