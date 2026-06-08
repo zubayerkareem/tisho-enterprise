@@ -59,15 +59,11 @@ export function Sidebar({ onClose }: SidebarProps) {
     <aside className="w-64 h-full min-h-screen bg-accent-primary flex flex-col">
       {/* Logo + mobile close */}
       <div className="px-5 py-5 border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-accent-highlight rounded-lg flex items-center justify-center shrink-0">
-            <span className="text-accent-primary font-black text-sm">T</span>
-          </div>
-          <div>
-            <p className="text-white font-bold text-sm leading-tight">Tisho</p>
-            <p className="text-accent-soft text-xs">Enterprises</p>
-          </div>
-        </div>
+        <img
+          src="/logos/logo-side-white.svg"
+          alt="Tisho Enterprises"
+          className="h-8 w-auto"
+        />
         {onClose && (
           <button
             onClick={onClose}

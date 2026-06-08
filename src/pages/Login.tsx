@@ -67,15 +67,11 @@ export function Login() {
     <div className="min-h-screen bg-surface-subtle flex">
       {/* Left panel */}
       <div className="hidden lg:flex w-1/2 bg-accent-primary flex-col justify-between p-12">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-accent-highlight rounded-xl flex items-center justify-center">
-            <span className="text-accent-primary font-black text-base">T</span>
-          </div>
-          <div>
-            <p className="text-white font-bold text-base">Tisho Enterprises</p>
-            <p className="text-accent-soft text-xs">Investor Portal</p>
-          </div>
-        </div>
+        <img
+          src="/logos/logo-side-white.svg"
+          alt="Tisho Enterprises"
+          className="h-10 w-auto"
+        />
 
         <div>
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
@@ -104,11 +100,8 @@ export function Login() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-9 h-9 bg-accent-primary rounded-xl flex items-center justify-center">
-              <span className="text-accent-highlight font-black text-base">T</span>
-            </div>
-            <span className="text-text-primary font-bold text-lg">Tisho Enterprises</span>
+          <div className="mb-8 lg:hidden">
+            <img src="/logos/logo-side-black.svg" alt="Tisho Enterprises" className="h-9 w-auto" />
           </div>
 
           <div className="bg-surface-base rounded-2xl border border-border-default shadow-sm p-8">

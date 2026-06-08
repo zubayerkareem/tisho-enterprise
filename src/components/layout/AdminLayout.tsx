@@ -42,15 +42,11 @@ function AdminSidebar({ onClose }: { onClose?: () => void }) {
     <aside className="w-64 h-full min-h-screen flex flex-col" style={{ backgroundColor: '#003819' }}>
       {/* Logo + close */}
       <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#c3f63c' }}>
-            <span className="font-black text-sm" style={{ color: '#003819' }}>T</span>
-          </div>
-          <div>
-            <p className="text-white font-bold text-sm leading-tight">Tisho Admin</p>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>Control Panel</p>
-          </div>
-        </div>
+        <img
+          src="/logos/logo-side-white.svg"
+          alt="Tisho Enterprises"
+          className="h-8 w-auto"
+        />
         {onClose && (
           <button
             onClick={onClose}
