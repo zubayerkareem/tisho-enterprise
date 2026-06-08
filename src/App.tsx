@@ -15,7 +15,9 @@ import { Withdrawals } from '@/pages/Withdrawals'
 import { Support } from '@/pages/Support'
 import { Settings } from '@/pages/Settings'
 import { Referral } from '@/pages/Referral'
+import { Apply } from '@/pages/Apply'
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
+import { AdminApplications } from '@/pages/admin/AdminApplications'
 import { AdminUsers } from '@/pages/admin/AdminUsers'
 import { AdminInvestments } from '@/pages/admin/AdminInvestments'
 import { AdminPayments } from '@/pages/admin/AdminPayments'
@@ -57,6 +59,7 @@ export default function App() {
               <Route path="referral"       element={<Referral />} />
               <Route path="support"        element={<Support />} />
               <Route path="settings"       element={<Settings />} />
+              <Route path="apply"          element={<Apply />} />
             </Route>
             <Route
               path="/admin"
@@ -72,7 +75,8 @@ export default function App() {
               <Route path="payments"    element={<AdminPayments />} />
               <Route path="referrals"   element={<AdminReferrals />} />
               <Route path="support"     element={<AdminSupport />} />
-              <Route path="withdrawals" element={<AdminWithdrawals />} />
+              <Route path="withdrawals"   element={<AdminWithdrawals />} />
+              <Route path="applications" element={<AdminApplications />} />
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>

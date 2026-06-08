@@ -24,6 +24,7 @@ export function useAdminStats() {
         { count: upcomingPaymentsCount },
         { count: openSupportThreads },
         { count: pendingWithdrawals },
+        { count: pendingApplications },
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'investor'),
         supabase.from('investments').select('*', { count: 'exact', head: true }).eq('status', 'pending').eq('payment_method', 'bank'),
@@ -32,6 +33,7 @@ export function useAdminStats() {
         supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'pending').lte('date', sevenDaysLater).gte('date', today),
         supabase.from('support_threads').select('*', { count: 'exact', head: true }).eq('status', 'open'),
         supabase.from('withdrawals').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('investor_applications').select('*', { count: 'exact', head: true }).eq('status', 'submitted'),
       ])
 
       const totalAumPence = (aumData ?? []).reduce((sum, r) => sum + (r.amount_pence ?? 0), 0)
@@ -43,7 +45,8 @@ export function useAdminStats() {
         totalAumPence,
         upcomingPaymentsCount: upcomingPaymentsCount ?? 0,
         openSupportThreads: openSupportThreads ?? 0,
-        pendingWithdrawals: pendingWithdrawals ?? 0,
+        pendingWithdrawals:   pendingWithdrawals   ?? 0,
+        pendingApplications:  pendingApplications  ?? 0,
       }
     },
   })
