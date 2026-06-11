@@ -75,7 +75,7 @@ function PolicyCard({ type, selected, onSelect }: { type: InvestmentType; select
           selected ? 'bg-[#c3f63c] text-[#002c14]'
             : isComprehensive ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
         )}>
-          {isComprehensive ? '10–25% / year' : '6–10% / month'}
+          {isComprehensive ? '25–42% / year' : '6–10% / month'}
         </span>
       </div>
       <p className={cn('text-xs leading-relaxed', selected ? 'text-[#abc6b7]' : 'text-[#7a8a82]')}>
