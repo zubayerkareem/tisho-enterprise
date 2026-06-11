@@ -1,4 +1,4 @@
-import { Bell, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth/AuthContext'
 
@@ -33,14 +33,7 @@ export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
       </div>
 
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
-        <button
-          className="relative p-2 rounded-full hover:bg-surface-subtle transition-colors"
-          aria-label="Notifications"
-        >
-          <Bell size={18} className="text-text-secondary" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent-highlight rounded-full border border-white" />
-        </button>
-        <button
+<button
           onClick={() => navigate('/settings')}
           className="flex items-center gap-2 rounded-xl px-2 py-1 hover:bg-surface-subtle transition-colors"
         >

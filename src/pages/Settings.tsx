@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Lock, FileCheck, Camera, Download, AlertCircle, CheckCircle2, Clock, Loader2, Eye, EyeOff } from 'lucide-react'
+import { User, Lock, FileCheck, Download, AlertCircle, CheckCircle2, Clock, Loader2, Eye, EyeOff } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -165,13 +165,8 @@ export function Settings() {
       {/* Personal Info */}
       <SectionCard icon={User} title="Personal Information">
         <div className="flex items-center gap-4 mb-5 pb-4 border-b border-[#e4e7e5]">
-          <div className="relative shrink-0">
-            <div className="w-14 h-14 rounded-full bg-[#003819] flex items-center justify-center">
-              <span className="text-white font-bold text-lg">{initials}</span>
-            </div>
-            <button className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#c3f63c] rounded-full flex items-center justify-center" aria-label="Change photo">
-              <Camera size={11} className="text-[#002c14]" />
-            </button>
+          <div className="w-14 h-14 rounded-full bg-[#003819] flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-lg">{initials}</span>
           </div>
           <div>
             <p className="font-semibold text-[#002c14]">{name}</p>
