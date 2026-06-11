@@ -24,7 +24,8 @@ export function useCreateWithdrawal() {
   const { user } = useAuth()
   return useMutation({
     mutationFn: async (payload: {
-      investment_id: string
+      source: 'investment' | 'referral_balance'
+      investment_id?: string | null
       amount_pence: number
       reason: string
       payout_method_id?: string | null
