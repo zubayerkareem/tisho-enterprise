@@ -11,11 +11,11 @@ export function compactTierRate(amountGBP: number): number {
 
 /** Comprehensive policy: tiered annual % by principal (GBP). */
 export function comprehensiveTierRate(amountGBP: number): number {
-  if (amountGBP <= 5_000)     return 10
-  if (amountGBP <= 50_000)    return 12
-  if (amountGBP <= 500_000)   return 15
-  if (amountGBP <= 5_000_000) return 20
-  return 25
+  if (amountGBP <= 5_000)     return 25
+  if (amountGBP <= 50_000)    return 30
+  if (amountGBP <= 500_000)   return 35
+  if (amountGBP <= 5_000_000) return 40
+  return 42
 }
 
 /** Monthly payout amount in GBP for an investment. */
