@@ -1,4 +1,5 @@
 import { Bell, Menu } from 'lucide-react'
+import { useAuth } from '@/lib/auth/AuthContext'
 import { mockUser } from '@/data/mockData'
 
 interface TopBarProps {
@@ -8,7 +9,9 @@ interface TopBarProps {
 }
 
 export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
-  const initials = mockUser.name.split(' ').map((n) => n[0]).join('')
+  const { profile } = useAuth()
+  const displayName = profile?.name || mockUser.name
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('')
 
   return (
     <header className="bg-surface-base border-b border-border-default px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shrink-0">
@@ -41,7 +44,7 @@ export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
             <span className="text-white font-bold text-xs">{initials}</span>
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-medium text-text-primary leading-tight">{mockUser.name}</p>
+            <p className="text-sm font-medium text-text-primary leading-tight">{displayName}</p>
             <p className="text-xs text-text-muted">Investor</p>
           </div>
         </div>
