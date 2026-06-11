@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth/AuthContext'
 
 interface PayoutMethodPayload {
-  type: 'bank'
+  type: 'bank' | 'cash' | 'western_union' | 'moneygram'
   label: string
   account_name: string
   account_number_masked: string

@@ -6,7 +6,7 @@ export type PaymentStatus = 'completed' | 'pending'
 export type WithdrawalStatus = 'pending' | 'approved' | 'rejected' | 'paid'
 export type SupportMessageSender = 'investor' | 'admin'
 export type SupportThreadStatus = 'open' | 'resolved'
-export type PayoutMethodType = 'bank'
+export type PayoutMethodType = 'bank' | 'cash' | 'western_union' | 'moneygram'
 export type UserRole = 'investor' | 'admin'
 
 export interface User {
