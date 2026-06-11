@@ -17,7 +17,7 @@ export type PaymentSource = 'stripe' | 'manual'
 export type WithdrawalStatus = 'pending' | 'under_review' | 'approved' | 'rejected' | 'paid'
 export type SupportSender = 'investor' | 'admin'
 export type SupportStatus = 'open' | 'resolved'
-export type PayoutMethodType = 'bank'
+export type PayoutMethodType = 'bank' | 'cash' | 'western_union' | 'moneygram'
 export type ProfitMode = 'automatic' | 'manual'
 
 export interface Database {
