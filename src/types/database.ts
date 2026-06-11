@@ -117,8 +117,9 @@ export interface Database {
       withdrawals: {
         Row: {
           id: string
-          investment_id: string
+          investment_id: string | null
           user_id: string
+          source: 'investment' | 'referral_balance'
           request_date: string
           amount_pence: number
           reason: string
