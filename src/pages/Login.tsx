@@ -85,7 +85,7 @@ export function Login() {
         <div className="grid grid-cols-3 gap-4">
           {[
             { label: 'Total Invested',    value: '£4.2M+' },
-            { label: 'Avg. Annual Return', value: '25%' },
+            { label: 'Avg. Annual Return', value: '10–25%' },
             { label: 'Investors',          value: '200+' },
           ].map(s => (
             <div key={s.label} className="bg-white/10 rounded-2xl p-4">

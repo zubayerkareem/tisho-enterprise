@@ -23,11 +23,19 @@ export function useInvestments() {
 }
 
 export function getCompactRatePercent(amountPence: number): number {
-  if (amountPence <= 500000)   return 6
-  if (amountPence <= 5000000)  return 7
-  if (amountPence <= 50000000) return 8
-  if (amountPence <= 500000000) return 9
+  if (amountPence <= 500_000)    return 6
+  if (amountPence <= 5_000_000)  return 7
+  if (amountPence <= 50_000_000) return 8
+  if (amountPence <= 500_000_000) return 9
   return 10
+}
+
+export function getComprehensiveRatePercent(amountPence: number): number {
+  if (amountPence <= 500_000)    return 10
+  if (amountPence <= 5_000_000)  return 12
+  if (amountPence <= 50_000_000) return 15
+  if (amountPence <= 500_000_000) return 20
+  return 25
 }
 
 // ─── Shared investment row builder ───────────────────────────────────────────
@@ -54,8 +62,8 @@ function buildInvestmentInsert(
   let principalReturnPence: number
 
   if (type === 'comprehensive') {
-    ratePercent = 25
-    ratePerYearPence = Math.round(amountPence * 0.25)
+    ratePercent = getComprehensiveRatePercent(amountPence)
+    ratePerYearPence = Math.round(amountPence * ratePercent / 100)
     ratePerMonthPence = Math.round(ratePerYearPence / 12)
     principalReturnPence = amountPence
   } else {

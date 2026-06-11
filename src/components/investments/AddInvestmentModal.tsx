@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
-import { compactTierRate } from '@/lib/investments'
+import { compactTierRate, comprehensiveTierRate } from '@/lib/investments'
 import { useCreateInvestment, useCreateStripeInvestment } from '@/api/investments'
 import { toast } from 'sonner'
 import type { InvestmentType, PayoutFrequency } from '@/types/models'
@@ -33,8 +33,9 @@ function calcReturns(policy: InvestmentType | '', amount: number) {
   if (!policy || !amount || amount <= 0) return null
 
   if (policy === 'comprehensive') {
-    const monthly = (amount * 0.25) / 12
-    return { rate: '25% per year', monthly, total: monthly * 24, principalBack: true, tierNote: null }
+    const rate = comprehensiveTierRate(amount)
+    const monthly = (amount * rate / 100) / 12
+    return { rate: `${rate}% per year`, monthly, total: monthly * 24, principalBack: true, tierNote: null }
   }
 
   const rate = compactTierRate(amount)
@@ -44,7 +45,7 @@ function calcReturns(policy: InvestmentType | '', amount: number) {
     monthly,
     total: monthly * 24,
     principalBack: false,
-    tierNote: rate >= 8 ? 'Tier rate provisional — subject to client confirmation.' : null,
+    tierNote: null,
   }
 }
 
@@ -74,7 +75,7 @@ function PolicyCard({ type, selected, onSelect }: { type: InvestmentType; select
           selected ? 'bg-[#c3f63c] text-[#002c14]'
             : isComprehensive ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
         )}>
-          {isComprehensive ? '25% / year' : '6–10% / month'}
+          {isComprehensive ? '10–25% / year' : '6–10% / month'}
         </span>
       </div>
       <p className={cn('text-xs leading-relaxed', selected ? 'text-[#abc6b7]' : 'text-[#7a8a82]')}>
