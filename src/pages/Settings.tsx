@@ -1,11 +1,13 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Lock, FileCheck, Camera, Download, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
+import { User, Lock, FileCheck, Camera, Download, AlertCircle, CheckCircle2, Clock, Loader2, Eye, EyeOff } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useMyApplication } from '@/api/applications'
 import { printApplicationPDF } from '@/lib/applicationPDF'
+import { useUpdateProfile, useChangePassword } from '@/api/profile'
 
 function SectionCard({ icon: Icon, title, children }: {
   icon: React.ElementType; title: string; children: React.ReactNode
@@ -99,7 +101,6 @@ function ApplicationStatus({
 }
 
 export function Settings() {
-  const navigate = useNavigate()
   const { profile } = useAuth()
   const { data: capitalApp, isLoading: loadingCapital } = useMyApplication('capital_return')
   const { data: compactApp,  isLoading: loadingCompact  } = useMyApplication('compact')
@@ -111,6 +112,52 @@ export function Settings() {
   const joinDate = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
     : ''
+
+  // ── Personal Info ──────────────────────────────────────────────
+  const [profileForm, setProfileForm] = useState({
+    name:    name,
+    phone:   profile?.phone   ?? '',
+    country: profile?.country ?? '',
+  })
+  const updateProfile = useUpdateProfile()
+
+  function handleProfileChange(field: keyof typeof profileForm) {
+    return (e: React.ChangeEvent<HTMLInputElement>) =>
+      setProfileForm(prev => ({ ...prev, [field]: e.target.value }))
+  }
+
+  function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault()
+    updateProfile.mutate({
+      name:    profileForm.name.trim()    || undefined,
+      phone:   profileForm.phone.trim()   || undefined,
+      country: profileForm.country.trim() || undefined,
+    })
+  }
+
+  // ── Change Password ────────────────────────────────────────────
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' })
+  const [showPw, setShowPw] = useState({ current: false, next: false, confirm: false })
+  const [pwError, setPwError] = useState('')
+  const changePassword = useChangePassword()
+
+  function handlePwChange(field: keyof typeof pwForm) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPwError('')
+      setPwForm(prev => ({ ...prev, [field]: e.target.value }))
+    }
+  }
+
+  function handleSavePassword(e: React.FormEvent) {
+    e.preventDefault()
+    if (pwForm.next.length < 6) { setPwError('Password must be at least 6 characters.'); return }
+    if (pwForm.next !== pwForm.confirm) { setPwError('Passwords do not match.'); return }
+    changePassword.mutate({ password: pwForm.next }, {
+      onSuccess: () => setPwForm({ current: '', next: '', confirm: '' }),
+    })
+  }
+
+  const inputClass = 'w-full px-4 py-2.5 text-sm rounded-full border border-[#e4e7e5] text-[#002c14] focus:outline-none focus:ring-2 focus:ring-[#003819]'
 
   return (
     <div className="space-y-4 md:space-y-5 max-w-2xl">
@@ -132,39 +179,96 @@ export function Settings() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-          {[
-            { label: 'Full Name',     value: name },
-            { label: 'Email Address', value: email },
-            { label: 'Phone Number',  value: profile?.phone ?? '' },
-            { label: 'Country',       value: profile?.country ?? '' },
-          ].map(f => (
-            <div key={f.label}>
-              <label className="block text-xs font-medium text-[#4a5d54] mb-1.5">{f.label}</label>
-              <input type="text" defaultValue={f.value}
-                className="w-full px-4 py-2.5 text-sm rounded-full border border-[#e4e7e5] text-[#002c14] focus:outline-none focus:ring-2 focus:ring-[#003819]"
+        <form onSubmit={handleSaveProfile}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[#4a5d54] mb-1.5">Full Name</label>
+              <input
+                type="text"
+                value={profileForm.name}
+                onChange={handleProfileChange('name')}
+                className={inputClass}
               />
             </div>
-          ))}
-        </div>
-        <div className="mt-4">
-          <Button size="sm">Save Changes</Button>
-        </div>
+            <div>
+              <label className="block text-xs font-medium text-[#4a5d54] mb-1.5">Email Address</label>
+              <input
+                type="text"
+                value={email}
+                disabled
+                className={inputClass + ' opacity-50 cursor-not-allowed'}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#4a5d54] mb-1.5">Phone Number</label>
+              <input
+                type="text"
+                value={profileForm.phone}
+                onChange={handleProfileChange('phone')}
+                placeholder="+44 7700 000000"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#4a5d54] mb-1.5">Country</label>
+              <input
+                type="text"
+                value={profileForm.country}
+                onChange={handleProfileChange('country')}
+                placeholder="United Kingdom"
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div className="mt-4">
+            <Button size="sm" type="submit" disabled={updateProfile.isPending} className="gap-2">
+              {updateProfile.isPending && <Loader2 size={13} className="animate-spin" />}
+              Save Changes
+            </Button>
+          </div>
+        </form>
       </SectionCard>
 
       {/* Change Password */}
       <SectionCard icon={Lock} title="Change Password">
-        <div className="space-y-3">
-          {['Current Password', 'New Password', 'Confirm New Password'].map(label => (
-            <div key={label}>
+        <form onSubmit={handleSavePassword} className="space-y-3">
+          {(
+            [
+              { field: 'current' as const, label: 'Current Password' },
+              { field: 'next'    as const, label: 'New Password' },
+              { field: 'confirm' as const, label: 'Confirm New Password' },
+            ]
+          ).map(({ field, label }) => (
+            <div key={field}>
               <label className="block text-xs font-medium text-[#4a5d54] mb-1.5">{label}</label>
-              <input type="password" defaultValue="••••••••••"
-                className="w-full px-4 py-2.5 text-sm rounded-full border border-[#e4e7e5] text-[#002c14] focus:outline-none focus:ring-2 focus:ring-[#003819]"
-              />
+              <div className="relative">
+                <input
+                  type={showPw[field] ? 'text' : 'password'}
+                  value={pwForm[field]}
+                  onChange={handlePwChange(field)}
+                  placeholder="••••••••••"
+                  className={inputClass + ' pr-10'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(prev => ({ ...prev, [field]: !prev[field] }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7a8a82] hover:text-[#002c14] transition-colors"
+                >
+                  {showPw[field] ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
             </div>
           ))}
-          <Button size="sm" className="mt-1">Update Password</Button>
-        </div>
+          {pwError && (
+            <p className="text-xs text-[#9c2c2c] flex items-center gap-1">
+              <AlertCircle size={12} />{pwError}
+            </p>
+          )}
+          <Button size="sm" type="submit" disabled={changePassword.isPending} className="mt-1 gap-2">
+            {changePassword.isPending && <Loader2 size={13} className="animate-spin" />}
+            Update Password
+          </Button>
+        </form>
       </SectionCard>
 
       {/* KYC / Applications */}
@@ -195,7 +299,6 @@ export function Settings() {
           />
         </div>
       </SectionCard>
-
     </div>
   )
 }
