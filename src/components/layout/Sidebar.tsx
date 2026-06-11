@@ -8,7 +8,6 @@ import {
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth/AuthContext'
-import { mockUser } from '@/data/mockData'
 
 interface NavItem {
   to: string
@@ -35,8 +34,8 @@ export function Sidebar({ onClose }: SidebarProps) {
   const { signOut, profile } = useAuth()
   const [copied, setCopied] = useState(false)
 
-  const displayName  = profile?.name  || mockUser.name
-  const displayEmail = profile?.email || mockUser.email
+  const displayName  = profile?.name  ?? ''
+  const displayEmail = profile?.email ?? ''
   const initials     = displayName.split(' ').map((n: string) => n[0]).join('')
 
   const referralLink = profile?.referral_code
