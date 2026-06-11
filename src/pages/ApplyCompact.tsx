@@ -365,11 +365,11 @@ export function ApplyCompact() {
                   </thead>
                   <tbody>
                     {[
-                      ['£0 – £5,000',               '10%'],
-                      ['£5,001 – £50,000',          '11%'],
-                      ['£50,001 – £500,000',         '12%'],
-                      ['£500,001 – £5,000,000',      '13%'],
-                      ['Over £5,000,000',            '14%'],
+                      ['£0 – £5,000',               '6%'],
+                      ['£5,001 – £50,000',          '7%'],
+                      ['£50,001 – £500,000',         '8%'],
+                      ['£500,001 – £5,000,000',      '9%'],
+                      ['Over £5,000,000',            '10%'],
                     ].map(([c, r]) => (
                       <tr key={c} className="border-b border-[#e4e7e5] last:border-0">
                         <td className="py-1.5 text-[#002c14]">{c}</td>
@@ -468,7 +468,7 @@ export function ApplyCompact() {
                 <p className="text-xs font-semibold text-[#002c14] uppercase tracking-wider mb-3">Terms and Conditions — Compact Policy</p>
                 <ol className="space-y-2 text-xs text-[#4a5d54] list-decimal pl-4 leading-relaxed">
                   {[
-                    'The investor enjoys between 10 and 14% returns per month on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the contract is terminated but the investor can re-invest to renew the contract.',
+                    'The investor enjoys between 6% and 10% returns per month on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the contract is terminated but the investor can re-invest to renew the contract.',
                     'Anyone who refers an investor that successfully invests is credited £100 to their referral balance as a one-time commission.',
                     'Monthly portfolio updates will be made available through the Tisho Enterprises platform and via registered email.',
                     'A unique investor reference number is issued to all investors upon application approval.',

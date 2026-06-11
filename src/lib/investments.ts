@@ -1,15 +1,21 @@
 import type { Investment } from '@/types/models'
 
-/**
- * Compact policy: tiered monthly % by principal amount (GBP).
- * Tiers between £50k–£5M are provisional per PRD §4.2 — confirm with client.
- */
+/** Compact policy: tiered monthly % by principal (GBP). */
 export function compactTierRate(amountGBP: number): number {
-  if (amountGBP <= 5_000) return 6
-  if (amountGBP <= 50_000) return 7
-  if (amountGBP <= 500_000) return 8
+  if (amountGBP <= 5_000)     return 6
+  if (amountGBP <= 50_000)    return 7
+  if (amountGBP <= 500_000)   return 8
   if (amountGBP <= 5_000_000) return 9
   return 10
+}
+
+/** Comprehensive policy: tiered annual % by principal (GBP). */
+export function comprehensiveTierRate(amountGBP: number): number {
+  if (amountGBP <= 5_000)     return 10
+  if (amountGBP <= 50_000)    return 12
+  if (amountGBP <= 500_000)   return 15
+  if (amountGBP <= 5_000_000) return 20
+  return 25
 }
 
 /** Monthly payout amount in GBP for an investment. */
@@ -19,8 +25,7 @@ export function monthlyReturn(investment: Investment): number {
   if (investment.type === 'compact') {
     return (investment.amount * compactTierRate(investment.amount)) / 100
   }
-  // Comprehensive: 25%/yr default
-  return (investment.amount * 0.25) / 12
+  return (investment.amount * comprehensiveTierRate(investment.amount) / 100) / 12
 }
 
 /** Progress through the investment term as a 0–100 value. */
