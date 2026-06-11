@@ -274,7 +274,7 @@ export function Settings() {
           </p>
 
           <ApplicationStatus
-            label="Capital Return Policy"
+            label="Comprehensive Policy"
             route="/apply"
             policyType="capital_return"
             application={capitalApp}

@@ -351,7 +351,7 @@ export function Apply() {
 
               {/* Rate table */}
               <div className="rounded-2xl bg-[#f7f9f8] border border-[#e4e7e5] p-4 mt-2">
-                <p className="text-xs font-semibold text-[#4a5d54] uppercase tracking-wider mb-3">Capital Return Rates (Section F)</p>
+                <p className="text-xs font-semibold text-[#4a5d54] uppercase tracking-wider mb-3">Comprehensive Policy Rates (Section F)</p>
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-[#e4e7e5]">
