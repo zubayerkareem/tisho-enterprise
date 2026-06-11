@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { User, Lock, Bell, FileCheck, Camera, Download, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
+import { User, Lock, FileCheck, Camera, Download, AlertCircle, CheckCircle2, Clock } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -196,31 +196,6 @@ export function Settings() {
         </div>
       </SectionCard>
 
-      {/* Notifications */}
-      <SectionCard icon={Bell} title="Notification Preferences">
-        <div className="space-y-0">
-          {[
-            { label: 'Monthly profit credited',    desc: 'Email on each return payment',         on: true  },
-            { label: 'Withdrawal status updates',  desc: 'Email on approval, rejection, payout',  on: true  },
-            { label: 'Support message replies',    desc: 'Email when admin replies',              on: true  },
-            { label: 'KYC status changes',         desc: 'Email on KYC approval or rejection',   on: false },
-            { label: 'Investment confirmations',   desc: 'Email when investment is activated',    on: true  },
-          ].map(n => (
-            <div key={n.label} className="flex items-center justify-between py-3 border-b border-[#e4e7e5] last:border-0 gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-[#002c14] truncate">{n.label}</p>
-                <p className="text-xs text-[#7a8a82] hidden sm:block">{n.desc}</p>
-              </div>
-              <button
-                className={`relative w-10 h-5 rounded-full transition-colors duration-200 shrink-0 ${n.on ? 'bg-[#003819]' : 'bg-[#c5cdc9]'}`}
-                role="switch" aria-checked={n.on}
-              >
-                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${n.on ? 'translate-x-5' : 'translate-x-0.5'}`} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </SectionCard>
     </div>
   )
 }
