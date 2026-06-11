@@ -1,4 +1,5 @@
 import { Bell, Menu } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { mockUser } from '@/data/mockData'
 
@@ -10,6 +11,7 @@ interface TopBarProps {
 
 export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
   const { profile } = useAuth()
+  const navigate = useNavigate()
   const displayName = profile?.name || mockUser.name
   const initials = displayName.split(' ').map((n: string) => n[0]).join('')
 
@@ -39,15 +41,18 @@ export function TopBar({ title, subtitle, onMenuClick }: TopBarProps) {
           <Bell size={18} className="text-text-secondary" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-accent-highlight rounded-full border border-white" />
         </button>
-        <div className="flex items-center gap-2">
+        <button
+          onClick={() => navigate('/settings')}
+          className="flex items-center gap-2 rounded-xl px-2 py-1 hover:bg-surface-subtle transition-colors"
+        >
           <div className="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center shrink-0">
             <span className="text-white font-bold text-xs">{initials}</span>
           </div>
-          <div className="hidden md:block">
+          <div className="hidden md:block text-left">
             <p className="text-sm font-medium text-text-primary leading-tight">{displayName}</p>
             <p className="text-xs text-text-muted">Investor</p>
           </div>
-        </div>
+        </button>
       </div>
     </header>
   )
