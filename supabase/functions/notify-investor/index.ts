@@ -1,30 +1,84 @@
-import { createClient } from 'npm:@supabase/supabase-js@2'
-import { SMTPClient } from 'https://deno.land/x/denomailer@0.12.0/mod.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
+// ─── Native Deno SMTP over TLS (port 465) — no external imports needed ────────
+
+function b64(s: string): string {
+  const bytes = new TextEncoder().encode(s)
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin)
+}
+
+function wrapLines(s: string, width = 76): string {
+  const out: string[] = []
+  for (let i = 0; i < s.length; i += width) out.push(s.slice(i, i + width))
+  return out.join('\r\n')
+}
+
+async function smtpRead(conn: Deno.TlsConn): Promise<string> {
+  const dec = new TextDecoder()
+  let buf = ''
+  const chunk = new Uint8Array(4096)
+  while (true) {
+    const n = await conn.read(chunk)
+    if (n === null) break
+    buf += dec.decode(chunk.subarray(0, n))
+    if (/\r\n/.test(buf)) {
+      const lines = buf.trimEnd().split('\r\n')
+      const last = lines[lines.length - 1]
+      if (/^\d{3} /.test(last)) break
+    }
+  }
+  return buf
+}
+
 async function sendMail(to: string, subject: string, html: string) {
-  const client = new SMTPClient({
-    connection: {
-      hostname: 'smtp.gmail.com',
-      port: 465,
-      tls: true,
-      auth: {
-        username: Deno.env.get('SMTP_USER')!,
-        password: Deno.env.get('SMTP_PASS')!,
-      },
-    },
-  })
-  await client.send({
-    from: `Tisho Enterprises <${Deno.env.get('SMTP_USER')}>`,
-    to,
-    subject,
-    html,
-  })
-  await client.close()
+  const smtpUser = Deno.env.get('SMTP_USER')!
+  const smtpPass = Deno.env.get('SMTP_PASS')!
+  const enc = new TextEncoder()
+
+  const conn = await Deno.connectTls({ hostname: 'smtp.gmail.com', port: 465 })
+
+  async function cmd(line: string): Promise<string> {
+    await conn.write(enc.encode(line + '\r\n'))
+    return smtpRead(conn)
+  }
+
+  try {
+    await smtpRead(conn)                          // 220 greeting
+    await cmd('EHLO tishoenterprises.com')        // 250
+    await cmd('AUTH LOGIN')                       // 334
+    await cmd(b64(smtpUser))                      // 334
+    const authResp = await cmd(b64(smtpPass))     // 235
+    if (!authResp.startsWith('235')) throw new Error('SMTP auth failed: ' + authResp)
+
+    await cmd(`MAIL FROM:<${smtpUser}>`)          // 250
+    await cmd(`RCPT TO:<${to}>`)                  // 250
+    await cmd('DATA')                             // 354
+
+    const message = [
+      `From: =?UTF-8?B?${b64('Tisho Enterprises')}?= <${smtpUser}>`,
+      `To: ${to}`,
+      `Subject: =?UTF-8?B?${b64(subject)}?=`,
+      'MIME-Version: 1.0',
+      'Content-Type: text/html; charset=UTF-8',
+      'Content-Transfer-Encoding: base64',
+      '',
+      wrapLines(b64(html)),
+      '.',
+    ].join('\r\n') + '\r\n'
+
+    await conn.write(enc.encode(message))
+    await smtpRead(conn)                          // 250 queued
+    await cmd('QUIT')
+  } finally {
+    conn.close()
+  }
 }
 
 // ─── Email template ───────────────────────────────────────────────────────────
