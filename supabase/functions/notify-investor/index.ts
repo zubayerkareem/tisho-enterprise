@@ -1,20 +1,31 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import nodemailer from 'npm:nodemailer@6'
+import { SMTPClient } from 'https://deno.land/x/denomailer@0.12.0/mod.ts'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: Deno.env.get('SMTP_USER'),
-    pass: Deno.env.get('SMTP_PASS'),
-  },
-})
+async function sendMail(to: string, subject: string, html: string) {
+  const client = new SMTPClient({
+    connection: {
+      hostname: 'smtp.gmail.com',
+      port: 465,
+      tls: true,
+      auth: {
+        username: Deno.env.get('SMTP_USER')!,
+        password: Deno.env.get('SMTP_PASS')!,
+      },
+    },
+  })
+  await client.send({
+    from: `Tisho Enterprises <${Deno.env.get('SMTP_USER')}>`,
+    to,
+    subject,
+    html,
+  })
+  await client.close()
+}
 
 // ─── Email template ───────────────────────────────────────────────────────────
 
@@ -350,12 +361,7 @@ Deno.serve(async (req) => {
     const user = await getUserEmail(userId)
     if (!user) return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 })
 
-    await transporter.sendMail({
-      from: `"Tisho Enterprises" <${Deno.env.get('SMTP_USER')}>`,
-      to: user.email,
-      subject: email.subject,
-      html: emailHtml(email.subject, email.body),
-    })
+    await sendMail(user.email, email.subject, emailHtml(email.subject, email.body))
 
     console.log(`Email sent to ${user.email} — ${email.subject}`)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
