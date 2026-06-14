@@ -56,7 +56,7 @@ export function Referral() {
             <div>
               <h2 className="text-white font-bold text-lg leading-tight">Refer & Earn £100</h2>
               <p className="text-[#abc6b7] text-sm mt-1 leading-relaxed">
-                Share your referral link. Every time a friend invests using your link, you earn <strong className="text-[#c3f63c]">£100</strong> added instantly to your referral balance.
+                Share your referral link. When a friend signs up and makes their first investment using your link, you earn a one-time <strong className="text-[#c3f63c]">£100</strong> added to your referral balance.
               </p>
             </div>
           </div>
