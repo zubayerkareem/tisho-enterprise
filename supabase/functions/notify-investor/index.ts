@@ -104,8 +104,7 @@ function emailHtml(subject: string, bodyHtml: string): string {
 <tr><td align="center">
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 <tr><td style="background:#003819;border-radius:16px 16px 0 0;padding:28px 32px;">
-  <span style="display:inline-block;background:#c3f63c;border-radius:10px;width:36px;height:36px;text-align:center;line-height:36px;font-weight:900;font-size:18px;color:#003819;">T</span>
-  <span style="color:#fff;font-weight:700;font-size:16px;margin-left:10px;">Tisho Enterprises</span>
+  <img src="https://dashboard.tishoenterprises.com/logos/logo-side-white.svg" alt="Tisho Enterprises" style="height:36px;display:block;" />
 </td></tr>
 <tr><td style="background:#fff;padding:32px;border-left:1px solid #e4e7e5;border-right:1px solid #e4e7e5;">
   ${bodyHtml}
