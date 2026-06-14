@@ -157,11 +157,6 @@ export function printApplicationPDF(
     <span style="font-size:9pt;color:#555;margin-left:10px">Signed digitally on ${fmt(data.agreed_at ?? new Date().toISOString())}</span>
   </div>
 
-  <div class="sigs">
-    <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Investor: ${name}</div></div>
-    <div class="sig"><div class="sig-line"></div><div class="sig-lbl">For and on behalf of Tisho Enterprises Ltd</div></div>
-  </div>
-
   <div class="footer">
     Tisho Enterprises Ltd &nbsp;|&nbsp; 86-90 Paul Street, London, EC2A 4NE &nbsp;|&nbsp; dashboard.tishoenterprises.com
   </div>
