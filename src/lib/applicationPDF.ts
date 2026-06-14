@@ -49,18 +49,18 @@ export function printApplicationPDF(
         `<table>
           <thead><tr><th>Capital (GBP)</th><th>Annual Return</th></tr></thead>
           <tbody>
-            <tr><td>£0 – £5,000</td><td>25%</td></tr>
-            <tr><td>£5,001 – £50,000</td><td>30%</td></tr>
-            <tr><td>£50,001 – £500,000</td><td>35%</td></tr>
-            <tr><td>£500,001 – £5,000,000</td><td>40%</td></tr>
-            <tr><td>Over £5,000,000</td><td>42%</td></tr>
+            <tr><td>£0 – £5,000</td><td>10%</td></tr>
+            <tr><td>£5,001 – £50,000</td><td>12%</td></tr>
+            <tr><td>£50,001 – £500,000</td><td>15%</td></tr>
+            <tr><td>£500,001 – £5,000,000</td><td>20%</td></tr>
+            <tr><td>Over £5,000,000</td><td>25%</td></tr>
           </tbody>
         </table>`
       )
 
   const tnc1 = isCompact
     ? 'The investor enjoys between 6% and 10% returns per month on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the contract is terminated but the investor can re-invest to renew the contract.'
-    : 'The investor enjoys between 25% and 42% returns per annum on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the investor receives back the initial investment capital and the contract is terminated, but the investor may re-invest to renew the contract.'
+    : 'The investor enjoys between 10% and 25% returns per annum on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the investor receives back the initial investment capital and the contract is terminated, but the investor may re-invest to renew the contract.'
 
   const policyLabel = isCompact ? 'COMPACT POLICY' : 'COMPREHENSIVE POLICY'
 

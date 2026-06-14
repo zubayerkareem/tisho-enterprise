@@ -31,11 +31,11 @@ export function getCompactRatePercent(amountPence: number): number {
 }
 
 export function getComprehensiveRatePercent(amountPence: number): number {
-  if (amountPence <= 500_000)     return 25
-  if (amountPence <= 5_000_000)   return 30
-  if (amountPence <= 50_000_000)  return 35
-  if (amountPence <= 500_000_000) return 40
-  return 42
+  if (amountPence <= 500_000)     return 10
+  if (amountPence <= 5_000_000)   return 12
+  if (amountPence <= 50_000_000)  return 15
+  if (amountPence <= 500_000_000) return 20
+  return 25
 }
 
 // ─── Shared investment row builder ───────────────────────────────────────────
