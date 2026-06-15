@@ -108,6 +108,7 @@ export function Apply() {
   const [agreed, setAgreed] = useState(false)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData | 'agreed', string>>>({})
   const [done, setDone]   = useState(false)
+  const [reapplying, setReapplying] = useState(false)
   const [savedData, setSavedData] = useState<(FormData & { agreed_at: string }) | null>(null)
 
   const name  = profile?.name  ?? ''
@@ -170,7 +171,7 @@ export function Apply() {
   }
 
   // ─── Already submitted / approved / rejected ───────────────────────────────
-  if (existing && !done) {
+  if (existing && !done && !reapplying) {
     const colorMap: Record<string, string> = {
       approved: 'bg-[#c3f63c]',
       rejected: 'bg-red-100',
@@ -208,7 +209,10 @@ export function Apply() {
                 <Button onClick={() => navigate('/investments')}>Go to Investments</Button>
               )}
               {existing.status === 'rejected' && (
-                <Button onClick={() => navigate('/support')}>Contact Support</Button>
+                <>
+                  <Button onClick={() => setReapplying(true)}>Re-apply</Button>
+                  <Button variant="secondary" onClick={() => navigate('/support')}>Contact Support</Button>
+                </>
               )}
             </div>
           </CardContent>

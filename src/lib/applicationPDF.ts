@@ -59,7 +59,7 @@ export function printApplicationPDF(
       )
 
   const tnc1 = isCompact
-    ? 'The investor enjoys between 6% and 10% returns per month on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the contract is terminated but the investor can re-invest to renew the contract.'
+    ? 'The investor enjoys between 6% and 10% per month in this policy, calculated on initial capital contributed for a maximum of 24 months. The contract is terminated at 24th month but the investor can re-invest or have as many investment policies as they wish.'
     : 'The investor enjoys between 10% and 25% returns per annum on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the investor receives back the initial investment capital and the contract is terminated, but the investor may re-invest to renew the contract.'
 
   const policyLabel = isCompact ? 'COMPACT POLICY' : 'COMPREHENSIVE POLICY'

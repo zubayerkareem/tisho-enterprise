@@ -105,9 +105,10 @@ export function useReviewApplication() {
     mutationFn: async ({
       applicationId,
       userId,
+      policyType,
       status,
       adminNote,
-    }: { applicationId: string; userId: string; status: 'approved' | 'rejected'; adminNote?: string }) => {
+    }: { applicationId: string; userId: string; policyType: PolicyType; status: 'approved' | 'rejected'; adminNote?: string }) => {
       const now = new Date().toISOString()
       const { error: appErr } = await db
         .from('investor_applications')
@@ -121,11 +122,15 @@ export function useReviewApplication() {
         .eq('id', applicationId)
       if (appErr) throw appErr
 
-      const { error: profileErr } = await db
-        .from('profiles')
-        .update({ kyc_status: status === 'approved' ? 'approved' : 'rejected' })
-        .eq('id', userId)
-      if (profileErr) throw profileErr
+      // Only sync profile kyc_status for the comprehensive (capital_return) policy.
+      // Compact approval is independent and must not overwrite the comprehensive status.
+      if (policyType === 'capital_return') {
+        const { error: profileErr } = await db
+          .from('profiles')
+          .update({ kyc_status: status === 'approved' ? 'approved' : 'rejected' })
+          .eq('id', userId)
+        if (profileErr) throw profileErr
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'applications'] })

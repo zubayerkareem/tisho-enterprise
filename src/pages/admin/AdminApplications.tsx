@@ -34,14 +34,14 @@ function ApplicationRow({ app }: { app: any }) {
 
   async function handleApprove() {
     try {
-      await review.mutateAsync({ applicationId: app.id, userId: app.user_id, status: 'approved' })
+      await review.mutateAsync({ applicationId: app.id, userId: app.user_id, policyType: app.policy_type, status: 'approved' })
       toast.success(`${profile?.name ?? 'User'}'s application approved`)
     } catch { toast.error('Failed to approve') }
   }
 
   async function handleReject() {
     try {
-      await review.mutateAsync({ applicationId: app.id, userId: app.user_id, status: 'rejected', adminNote: rejectNote })
+      await review.mutateAsync({ applicationId: app.id, userId: app.user_id, policyType: app.policy_type, status: 'rejected', adminNote: rejectNote })
       toast.success('Application rejected')
       setRejecting(false)
     } catch { toast.error('Failed to reject') }

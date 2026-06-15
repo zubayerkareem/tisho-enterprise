@@ -108,6 +108,7 @@ export function ApplyCompact() {
   const [agreed, setAgreed] = useState(false)
   const [errors, setErrors] = useState<Partial<Record<keyof FormData | 'agreed', string>>>({})
   const [done, setDone]   = useState(false)
+  const [reapplying, setReapplying] = useState(false)
   const [savedData, setSavedData] = useState<(FormData & { agreed_at: string; policy_type: string }) | null>(null)
 
   const name  = profile?.name  ?? ''
@@ -171,7 +172,7 @@ export function ApplyCompact() {
   }
 
   // ─── Already submitted / approved / rejected ───────────────────────────────
-  if (existing && !done) {
+  if (existing && !done && !reapplying) {
     const colorMap: Record<string, string> = {
       approved: 'bg-[#c3f63c]',
       rejected: 'bg-red-100',
@@ -209,7 +210,10 @@ export function ApplyCompact() {
                 <Button onClick={() => navigate('/investments')}>Go to Investments</Button>
               )}
               {existing.status === 'rejected' && (
-                <Button onClick={() => navigate('/support')}>Contact Support</Button>
+                <>
+                  <Button onClick={() => setReapplying(true)}>Re-apply</Button>
+                  <Button variant="secondary" onClick={() => navigate('/support')}>Contact Support</Button>
+                </>
               )}
             </div>
           </CardContent>
@@ -468,7 +472,7 @@ export function ApplyCompact() {
                 <p className="text-xs font-semibold text-[#002c14] uppercase tracking-wider mb-3">Terms and Conditions — Compact Policy</p>
                 <ol className="space-y-2 text-xs text-[#4a5d54] list-decimal pl-4 leading-relaxed">
                   {[
-                    'The investor enjoys between 6% and 10% returns per month on a compensation policy of choice, calculated on capital contributed for a maximum of 24 months. After 24 months, the contract is terminated but the investor can re-invest to renew the contract.',
+                    'The investor enjoys between 6% and 10% per month in this policy, calculated on initial capital contributed for a maximum of 24 months. The contract is terminated at 24th month but the investor can re-invest or have as many investment policies as they wish.',
                     'Anyone who refers an investor that successfully invests is credited £100 to their referral balance as a one-time commission.',
                     'Monthly portfolio updates will be made available through the Tisho Enterprises platform and via registered email.',
                     'A unique investor reference number is issued to all investors upon application approval.',

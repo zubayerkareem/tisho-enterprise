@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useState, useRef, useCallback } from 'react'
-import { X, ImageIcon, CheckCircle2, Info, Loader2, Landmark, CreditCard, Copy, Check } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { X, ImageIcon, CheckCircle2, Info, Loader2, Landmark, CreditCard, Copy, Check, AlertCircle } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog'
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 import { compactTierRate, comprehensiveTierRate } from '@/lib/investments'
 import { useCreateInvestment, useCreateStripeInvestment } from '@/api/investments'
+import { useMyApplication } from '@/api/applications'
 import { toast } from 'sonner'
 import type { InvestmentType, PayoutFrequency } from '@/types/models'
 
@@ -265,6 +267,8 @@ function ReturnPreview({ policy, amount }: { policy: InvestmentType | ''; amount
 export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
   const createBankInvestment   = useCreateInvestment()
   const createStripeInvestment = useCreateStripeInvestment()
+  const { data: compactApp } = useMyApplication('compact')
+  const compactApproved = compactApp?.status === 'approved'
 
   const isPending = createBankInvestment.isPending || createStripeInvestment.isPending
 
@@ -295,6 +299,7 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
   function validate() {
     const e: typeof errors = {}
     if (!form.policy) e.policy = 'Please select a policy.'
+    if (form.policy === 'compact' && !compactApproved) e.policy = 'Your Compact Policy application must be approved before investing.'
     if (!form.amount || amountNum <= 0) e.amount = 'Please enter a valid amount.'
     else if (amountNum < 0.20) e.amount = 'Minimum investment is £0.20.'
     if (!form.paymentMethod) e.paymentMethod = 'Please select a payment method.'
@@ -395,6 +400,19 @@ export function AddInvestmentModal({ open, onClose }: AddInvestmentModalProps) {
                   <p className="text-xs text-[#9c2c2c] mt-1.5 flex items-center gap-1">
                     <Info size={11} />{errors.policy}
                   </p>
+                )}
+                {form.policy === 'compact' && !compactApproved && (
+                  <div className="mt-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 flex items-start gap-2 text-xs text-amber-800">
+                    <AlertCircle size={13} className="shrink-0 mt-0.5" />
+                    <span>
+                      {compactApp?.status === 'submitted'
+                        ? 'Your Compact Policy application is under review. You can invest once it is approved.'
+                        : compactApp?.status === 'rejected'
+                        ? <>Your Compact Policy application was not approved. <Link to="/apply-compact" onClick={onClose} className="underline font-semibold">Re-apply →</Link></>
+                        : <>You need a Compact Policy KYC approval first. <Link to="/apply-compact" onClick={onClose} className="underline font-semibold">Apply now →</Link></>
+                      }
+                    </span>
+                  </div>
                 )}
               </section>
 
