@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { AddInvestmentModal } from '@/components/investments/AddInvestmentModal'
 import { useInvestments } from '@/api/investments'
+import { useMyApplication } from '@/api/applications'
 import { toast } from 'sonner'
 import type { InvestmentRow } from '@/api/investments'
 import { usePayments } from '@/api/payments'
@@ -188,8 +189,11 @@ export function Investments() {
   const [modalOpen, setModalOpen] = useState(false)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { profile } = useAuth()
+  const { refreshProfile } = useAuth()
   const { data: investments, isLoading } = useInvestments()
+  const { data: comprehensiveApp, isLoading: loadingKyc } = useMyApplication('capital_return')
+
+  useEffect(() => { refreshProfile() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (searchParams.get('stripe_success') === '1') {
@@ -216,9 +220,19 @@ export function Investments() {
   const completed = (investments ?? []).filter(i => i.status === 'completed')
 
   // ─── KYC Gate ─────────────────────────────────────────────────────────────
-  if (profile && profile.kyc_status !== 'approved') {
-    const isPending  = profile.kyc_status === 'pending'
-    const isRejected = profile.kyc_status === 'rejected'
+  // Use the live application query (not the stale auth context profile) so
+  // admin approvals are reflected without requiring a page reload.
+  if (loadingKyc) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 size={24} className="animate-spin text-[#7a8a82]" />
+      </div>
+    )
+  }
+
+  if (comprehensiveApp?.status !== 'approved') {
+    const isRejected = comprehensiveApp?.status === 'rejected'
+    const isReview   = comprehensiveApp?.status === 'submitted'
     return (
       <div className="max-w-lg mx-auto py-8">
         <Card>
@@ -228,18 +242,20 @@ export function Investments() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-[#002c14]">
-                {isRejected ? 'Application Not Approved' : 'KYC Required'}
+                {isRejected ? 'Application Not Approved' : isReview ? 'Application Under Review' : 'KYC Required'}
               </h2>
               <p className="text-sm text-[#7a8a82] mt-2 leading-relaxed max-w-sm mx-auto">
                 {isRejected
-                  ? 'Your investor application was not approved. Please contact support or re-apply.'
+                  ? 'Your Comprehensive Policy application was not approved. Please re-apply or contact support.'
+                  : isReview
+                  ? 'Your application is being reviewed. We will notify you once approved (1–2 business days).'
                   : 'Complete your investor KYC application to unlock investments. It takes about 5 minutes.'}
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
-              {isPending && (
+              {!isRejected && (
                 <Link to="/apply">
-                  <Button>Complete KYC Application</Button>
+                  <Button>{isReview ? 'View Application' : 'Complete KYC Application'}</Button>
                 </Link>
               )}
               {isRejected && (
@@ -248,9 +264,6 @@ export function Investments() {
                   <Link to="/support"><Button variant="secondary">Contact Support</Button></Link>
                 </>
               )}
-              <Link to="/settings">
-                <Button variant="secondary">View KYC Status</Button>
-              </Link>
             </div>
           </CardContent>
         </Card>
