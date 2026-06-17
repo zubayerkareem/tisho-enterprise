@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { TrendingUp, Calendar, Wallet, Clock, ArrowRight, CheckCircle, AlertCircle, Info, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
@@ -8,6 +8,7 @@ import { ProgressBar } from '@/components/ui/ProgressBar'
 import { useAuth } from '@/lib/auth/AuthContext'
 import { useInvestments, type InvestmentRow } from '@/api/investments'
 import { usePayments, useMonthlyChartData } from '@/api/payments'
+import { useMyApplication } from '@/api/applications'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -69,11 +70,11 @@ function KycBanner({ status }: { status?: string }) {
       </div>
     )
   }
-  if (status === 'pending') {
+  if (status === 'submitted' || status === 'pending') {
     return (
       <div className="flex items-start sm:items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
         <Info size={16} className="text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
-        <p className="text-sm font-medium text-[#002c14]">KYC verification is pending. We'll notify you once reviewed.</p>
+        <p className="text-sm font-medium text-[#002c14]">KYC application is under review. We'll notify you once approved.</p>
       </div>
     )
   }
@@ -170,7 +171,10 @@ function InvestmentCard({ inv }: { inv: InvestmentRow }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function Overview() {
-  const { profile } = useAuth()
+  const { refreshProfile } = useAuth()
+  const { data: comprehensiveApp } = useMyApplication('capital_return')
+
+  useEffect(() => { refreshProfile() }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const { data: investments = [], isLoading: loadingInv } = useInvestments()
   const { data: payments = [],   isLoading: loadingPay } = usePayments()
   const { data: chartData = [] } = useMonthlyChartData(12)
@@ -216,7 +220,7 @@ export function Overview() {
 
   return (
     <div className="space-y-4 md:space-y-5 max-w-full">
-      <KycBanner status={profile?.kyc_status} />
+      <KycBanner status={comprehensiveApp?.status} />
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
